@@ -18,9 +18,10 @@ typedef struct s_serv
 {
 	int					socket_fd;
 	int					clientSockFd;
-	struct sockaddr_in	sockStructServ;
-	struct sockaddr_in	sockStructClient;
-	fd_set current_sockets, ready_sockets;
+	// struct sockaddr_in	sockStructServ;
+	// struct sockaddr_in	sockStructClient;
+	// fd_set				current_sockets; 
+	// fd_set				ready_sockets;
 
 } t_serv;
 
@@ -28,25 +29,42 @@ class Server
 {
 	public :
 
-			Server(std::string const &port, std::string const &pass_wd);
+			Server(std::string port, std::string pass_wd);
 			Server(Server const &src);
 			~Server(void);
 
 			Server & operator=(Server const &rhs);
 
-			std::string const	&getPort(void) const;
-			std::string const	&getPass_Wd(void) const;
-			void				getStruct(void) const;
+			std::string			getPort(void) const;
+			std::string			getPass_Wd(void) const;
+			// void				getStruct(void) const;
 
-			void				init_struct(void);
+			 void				init_struct(void);
+
+			int 				is_digit(std::string str, bool check) const;
+			int					checkPort(std::string port) const;
+			int					checkPass_Wd(std::string port) const;
 
 
+
+			class WrongPortException : public std::exception
+			{
+				public :
+						const char *what() const throw();
+			};
+
+			class WrongPasswordException : public std::exception
+			{
+				public :
+						const char *what() const throw();
+			};
+	
 	private :
 
 			Server(void);
-			std::string const	M_port;
-			std::string const	M_pass_wd;
-			t_serv				&M_struct;
+			std::string				M_port;
+			std::string				M_pass_wd;
+			t_serv					*M_struct;
 
 };
 
