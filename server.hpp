@@ -18,10 +18,10 @@ typedef struct s_serv
 {
 	int					socket_fd;
 	int					clientSockFd;
-	// struct sockaddr_in	sockStructServ;
-	// struct sockaddr_in	sockStructClient;
-	// fd_set				current_sockets; 
-	// fd_set				ready_sockets;
+	struct sockaddr_in	sockStructServ;
+	struct sockaddr_in	sockStructClient;
+	fd_set				current_sockets; 
+	fd_set				ready_sockets;
 
 } t_serv;
 
@@ -41,9 +41,9 @@ class Server
 
 			 void				init_struct(void);
 
-			int 				is_digit(std::string str, bool check) const;
-			int					checkPort(std::string port) const;
-			int					checkPass_Wd(std::string port) const;
+			// int 				is_digit(std::string str, bool check) const;
+			// int					checkPort(std::string port) const;
+			// int					checkPass_Wd(std::string port) const;
 
 
 
