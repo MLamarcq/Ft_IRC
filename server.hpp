@@ -14,10 +14,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cstring>
+#include <arpa/inet.h>
 
 typedef struct s_serv
 {
-	int					socket_fd;
+	int					serveurSockFd;
 	int					clientSockFd;
 	struct sockaddr_in	sockStructServ;
 	struct sockaddr_in	sockStructClient;
@@ -47,9 +48,10 @@ class Server
 			void				addNewSocketToThePool(int new_socket) const;
 
 			//Connextion between new request/accepted request and socket
-			int					send_message(int clientSockFd, std::string message) const;
-			void				accept_connexion(void);
-			void				handle_connexion(void);
+			int					i_send_message(int clientSockFd, std::string message) const;
+			void				i_accept_connexion(void);
+			void				i_handle_request(int i);
+			void				i_handle_first_connexion(void);
 
 			//Main program
 			void				mainProgram(void);
