@@ -1,7 +1,7 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-
+#include <list>
 #include <iostream>
 #include <string>
 #include <netdb.h>
@@ -15,7 +15,9 @@
 #include <stdlib.h>
 #include <cstring>
 #include <arpa/inet.h>
-
+#include "client.hpp"
+#include "ft_split.hpp"
+#include <vector>
 typedef struct s_serv
 {
 	int					serveurSockFd;
@@ -27,6 +29,7 @@ typedef struct s_serv
 
 } t_serv;
 
+class client;
 class Server
 {
 	public :
@@ -36,6 +39,11 @@ class Server
 			~Server(void);
 
 			Server & operator=(Server const &rhs);
+			// about client
+			int nbofClients;
+			client* createClient();
+			void 	addClientToList();
+			std::list<client *> listOfClients;
 
 			//Getters and init constructor
 			std::string			getPort(void) const;

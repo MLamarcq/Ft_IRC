@@ -132,6 +132,10 @@ void	Server::i_accept_connexion(void)
 void	Server::i_handle_first_connexion(void)
 {
 	char buff[513];
+	std::string nickname;
+	std::string realName;
+	std::string userName;
+    std::string hostName;
     int nbCar;
 
     nbCar = read(this->M_struct->clientSockFd, buff, 512);
@@ -142,19 +146,34 @@ void	Server::i_handle_first_connexion(void)
     }
     else
     {
+		client * clientPtr;
         buff[nbCar] = 0;
     
         std::cout << "nb car is " << nbCar << std::endl;
         std::cout << buff << std::endl;
 
-        memset(buff, 0, 513);
-        nbCar = i_send_message(this->M_struct->clientSockFd,":localhost 421 * LS :Unknown command\r\n");
-        nbCar = i_send_message(this->M_struct->clientSockFd,":localhost 001 haha :Welcome to the Internet Relay Network haha!imrane@localhost\r\n");
-        nbCar = i_send_message(this->M_struct->clientSockFd,":localhost 002 haha :Your host is localhost, running version 1.0\r\n");
-        nbCar = i_send_message(this->M_struct->clientSockFd,":localhost 003 haha :This server was created 01/01/24\r\n");
-        nbCar = i_send_message(this->M_struct->clientSockFd,":localhost 004 haha localhost 1.0\r\n");
-    }
+        
+		// créer le client
+		clientPtr = this->createClient();
+		// remplir les infos du client
+		clientPtr->setIp(inet_ntoa(this->M_struct->sockStructClient.sin_addr));
+		clientPtr->setPort(ntohs(this->M_struct->sockStructClient.sin_port));
+		clientPtr->fillStrParam(buff, clientPtr);
+		clientPtr->setsocketFd(this->M_struct->clientSockFd);
+		
+		//ajouter le client dans la liste
+		this->listOfClients.push_back(clientPtr);
+        //nbCar = i_send_message(this->M_struct->clientSockFd,":localhost 421 * LS :Unknown command\r\n");
+        nbCar = i_send_message(this->M_struct->clientSockFd,":localhost 001 " + clientPtr->getNickName() + " :Welcome to the Internet Relay Network " + clientPtr->getNickName()+"!" + clientPtr->getUserName() + "@localhost\r\n");
+        nbCar = i_send_message(this->M_struct->clientSockFd,":localhost 002 "+ clientPtr->getNickName() +  " :Your host is localhost, running version 1.0\r\n");
+        nbCar = i_send_message(this->M_struct->clientSockFd,":localhost 003 "+ clientPtr->getNickName() + " :This server was created 01/01/24\r\n");
+        nbCar = i_send_message(this->M_struct->clientSockFd,":localhost 004 " + clientPtr->getNickName() + " localhost 1.0\r\n");
+		clientPtr->setWelcomeMessageSent(true);
+		memset(buff, 0, 513);
+	}
+
 }
+
 void	Server::i_handle_request(int i)
 {
 	char buff[513];
@@ -202,6 +221,7 @@ void	Server::mainProgram(void)
 					// accept connexion
 					i_accept_connexion();
 					addNewSocketToThePool(this->M_struct->clientSockFd);
+					
 				}
 				else
 				{
@@ -212,6 +232,12 @@ void	Server::mainProgram(void)
 		}
 	}
 	return ;
+}
+client* Server::createClient()
+{
+  client* ptr;
+  ptr = new client();
+  return (ptr);
 }
 
 const char *Server::WrongPortException::what() const throw()
@@ -226,25 +252,30 @@ const char *Server::WrongPasswordException::what() const throw()
 
 const char *Server::WrongSocketFdEexception::what() const throw()
 {
+	perror("FUNCTION REAL ERROR here is why error socket\n");
 	return ("Error : Socket Fd failed.");
 }
 
 const char *Server::ErrorBindingException::what() const throw()
 {
+	perror("FUNCTION REAL ERROR here is why error binding\n");
 	return ("Error : Binding socket failed.");
 }
 
 const char *Server::ErrorListenException::what() const throw()
 {
+	perror("FUNCTION REAL ERROR here is why error listen\n");
 	return ("Error : Set socket in listen mode failed.");
 }
 
 const char *Server::WrongClientSocketFdException::what() const throw()
 {
+	perror("FUNCTION REAL ERROR here is why error socket\n");
 	return ("Client fd error. Can't connect with server");
 }
 
 const char *Server::SelectFunctionErrorException::what() const throw()
 {
+	perror("FUNCTION REAL ERROR here is why error select\n");
 	return ("An error occured with select function");
 }
