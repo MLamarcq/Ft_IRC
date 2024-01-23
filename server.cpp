@@ -119,7 +119,7 @@ void	Server::i_accept_connexion(void)
 	clientLen = sizeof(this->M_struct->sockStructClient);
 	std::cout << "waiting for a request..." << std::endl;
 	this->M_struct->clientSockFd = accept(this->M_struct->serveurSockFd, reinterpret_cast<struct sockaddr*>(&this->M_struct->sockStructClient), &clientLen);
-	std::cout << "New connection , socket fd is " << this->M_struct->clientSockFd << "ip is : " << inet_ntoa(this->M_struct->sockStructClient.sin_addr) << " , port : " << ntohs(this->M_struct->sockStructClient.sin_port) << std::endl;
+	//std::cout << "New connection , socket fd is " << this->M_struct->clientSockFd << "ip is : " << inet_ntoa(this->M_struct->sockStructClient.sin_addr) << " , port : " << ntohs(this->M_struct->sockStructClient.sin_port) << std::endl;
 	if (this->M_struct->clientSockFd < 0)
 	{
 		throw (WrongClientSocketFdException());
@@ -169,6 +169,7 @@ void	Server::i_handle_first_connexion(void)
         nbCar = i_send_message(this->M_struct->clientSockFd,":localhost 003 "+ clientPtr->getNickName() + " :This server was created 01/01/24\r\n");
         nbCar = i_send_message(this->M_struct->clientSockFd,":localhost 004 " + clientPtr->getNickName() + " localhost 1.0\r\n");
 		clientPtr->setWelcomeMessageSent(true);
+		clientPtr->hello();
 		memset(buff, 0, 513);
 	}
 
@@ -178,13 +179,44 @@ void	Server::i_handle_request(int i)
 {
 	char buff[513];
     int nbCar;
+	std::string buffStdStr;
 
     nbCar = read(i, buff, 512);
+	buffStdStr = buff;
+	//std::cout << "c1\n";
     if (nbCar == 0)
     {
-        close(i);
-        std::cout << "i close the connection for the sock" << i << "\n";
+		//std::cout << "c2\n";
+		client * tempClient;
+		close(i);
+		FD_CLR(i, &(this->M_struct->current_sockets));
+		tempClient = this->findClientBySocket(i);
+		if (tempClient != NULL)
+		{
+			tempClient->goodBy();
+			this->eraseClientFromList(tempClient->getNickName());
+		}
     }
+	else if (buffStdStr.find("QUIT") != std::string::npos)
+	{
+		// ok ya un moment particulier ou ça peut segfault
+		// je crois c'est lié au fait que parfois ya pas d'info dans le client
+		// voir pk ya pas d'info
+		//std::cout << "c3\n";
+		client * tempClient;
+		close(i);
+		FD_CLR(i, &(this->M_struct->current_sockets));
+		//std::cout << "c3.1\n";
+		tempClient = this->findClientBySocket(i);
+		//std::cout << "c3.2\n";
+		if (tempClient != NULL)
+			tempClient->goodBy();
+		//std::cout << "c3.3\n";
+		if (tempClient != NULL)
+			this->eraseClientFromList(tempClient->getNickName());
+		//std::cout << "c3.4\n";
+		//std::cout << "I ERASE\n";
+	}
     else
     {
         std::cout << "IM HERE IN HANDLE REQUEST\n";
@@ -226,6 +258,7 @@ void	Server::mainProgram(void)
 				else
 				{
 					//handle connexion
+					//std::cout << "IM BACK to HANDLE REQ\n";
 					i_handle_request(i);
 				}
 			}
@@ -238,6 +271,46 @@ client* Server::createClient()
   client* ptr;
   ptr = new client();
   return (ptr);
+}
+
+client *Server::findClientBySocket(int clientSocketFd)
+{
+	for (std::list<client *>::iterator it = this->listOfClients.begin(); it != this->listOfClients.end(); it++) {
+        if ((*it)->getsocketFd() == clientSocketFd)
+			return (*it);
+    }
+	return (NULL);
+}
+
+client *Server::findClientByNickName(std::string clientNickname)
+{
+	std::string temp;
+	for (std::list<client *>::iterator it = this->listOfClients.begin(); it != this->listOfClients.end(); it++) {
+        temp = (*it)->getNickName();
+		if (temp.find(clientNickname) != std::string::npos)
+			return (*it);
+    }
+	return (NULL);
+}
+
+void	Server::eraseClientFromList(std::string clientNickname)
+{
+	std::string temp;
+	for (std::list<client *>::iterator it = this->listOfClients.begin(); it != this->listOfClients.end(); it++) {
+        if (it != this->listOfClients.end())
+		{
+			temp = (*it)->getNickName();
+			if (temp.find(clientNickname) != std::string::npos)
+			{
+				listOfClients.erase(it);
+				//std::cout << "IM HERE\n";
+				free(*it);
+				//std::cout << "IM HERE 2\n";
+				return ;
+			}
+		}
+			
+    }
 }
 
 const char *Server::WrongPortException::what() const throw()

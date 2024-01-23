@@ -18,6 +18,7 @@
 #include "client.hpp"
 #include "ft_split.hpp"
 #include <vector>
+#include "colors.hpp"
 typedef struct s_serv
 {
 	int					serveurSockFd;
@@ -42,8 +43,10 @@ class Server
 			// about client
 			int nbofClients;
 			client* createClient();
-			void 	addClientToList();
 			std::list<client *> listOfClients;
+			client* findClientBySocket(int clientSocketFd);
+			client* findClientByNickName(std::string clientNickname);
+			void	eraseClientFromList(std::string clientNickname);
 
 			//Getters and init constructor
 			std::string			getPort(void) const;

@@ -25,3 +25,5 @@ int main(int argc, char **argv)
 	}
 	return (0);
 }
+// supprimer le client correctement
+// afficher un beau message au depart et à l'arrivé

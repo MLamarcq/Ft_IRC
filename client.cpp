@@ -1,13 +1,13 @@
 #include "client.hpp"
 
-client::client() : nickName(""), realName(""),userName(""),
-                    hostName(""),isOperator(false),welcomeMessageSent(false),
+client::client() : nickName("Default"), realName("Default"),userName("Default"),
+                    hostName("Default"),isOperator(false),welcomeMessageSent(false),
                     numberChannelJoined(0) 
 {
 
 }
 
-client::client(std::string hostNameParam, int fd) : nickName(""), realName(""),userName(""),
+client::client(std::string hostNameParam, int fd) : nickName("Default"), realName("Default"),userName("Default"),
                     hostName(hostNameParam),isOperator(false),welcomeMessageSent(false),
                     socketFd(fd), numberChannelJoined(0)  
 {
@@ -150,13 +150,13 @@ void client::fillStrParam(std::string str, client* clientPtr)
             while (tabSplit[i])
             {
                 if (argUser == 1)
-                    clientPtr->setUserName(copyString(tabSplit[i]));
+                    clientPtr->setUserName(tabSplit[i]);
                 if (argUser == 2)
-                    clientPtr->setMode(copyString(tabSplit[i]));
+                    clientPtr->setMode(tabSplit[i]);
                 if (argUser == 3)
-                    clientPtr->setHostName(copyString(tabSplit[i]));
+                    clientPtr->setHostName(tabSplit[i]);
                 if (argUser == 4)
-                    clientPtr->setRealName(copyString(tabSplit[i]));
+                    clientPtr->setRealName(tabSplit[i]);
                 i++;
                 argUser++;
             }
@@ -164,6 +164,32 @@ void client::fillStrParam(std::string str, client* clientPtr)
         if (tabSplit[i])
             i++; 
     }
-    (void)clientPtr;
-
 }
+
+void client::hello()
+{
+    std::cout	<< GREEN
+	<< "client : " << this->getNickName()
+    << "\t now active on "
+	<< "socket fd: " << this->getsocketFd()
+	<< "\t ip: " << this->getIp()
+	<< "\t port: " << this->getPort()
+	<< "\thostname: " << this->getPort()
+	<< END << std::endl;
+}
+
+void client::goodBy()
+{
+    std::cout	<< GREEN
+	<< "client : " << this->getNickName()
+    << "\t is disconnected and no longer on  "
+	<< "\t socket fd: " << this->getsocketFd()
+	<< "\t ip: " << this->getIp()
+	<< "\t port: " << this->getPort()
+	<< "\thostname: " << this->getPort()
+	<< END << std::endl;
+}
+
+
+
+

@@ -42,6 +42,8 @@ class client {
 
         //utiles
         void fillStrParam(std::string str, client* clientPtr);
+        void hello();
+        void goodBy();
     protected:
         std::string nickName;
         std::string realName;
