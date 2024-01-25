@@ -19,6 +19,10 @@
 #include "ft_split.hpp"
 #include <vector>
 #include "colors.hpp"
+#include <signal.h>
+
+#include "command.hpp"
+
 typedef struct s_serv
 {
 	int					serveurSockFd;
@@ -31,6 +35,7 @@ typedef struct s_serv
 } t_serv;
 
 class client;
+class command;
 class Server
 {
 	public :
@@ -40,12 +45,16 @@ class Server
 			~Server(void);
 
 			Server & operator=(Server const &rhs);
+			
+			//Essai pour les signaux
+			static Server* serverInstance;
+			
 			// about client
 			int nbofClients;
 			client* createClient();
 			std::list<client *> listOfClients;
 			client* findClientBySocket(int clientSocketFd);
-			client* findClientByNickName(std::string clientNickname);
+			client*	findClientByNickName(std::string clientNickname);
 			void	eraseClientFromList(std::string clientNickname);
 
 			//Getters and init constructor
@@ -53,10 +62,12 @@ class Server
 			std::string			getPass_Wd(void) const;
 			void				Copy_Struct(Server const &rhs);
 			void				init_struct(void);
+			void				fill_commands_vector(void);
 
 			//All about socket
 			void				Setup_Socket(void);
 			void				addNewSocketToThePool(int new_socket) const;
+			void				closeSocket(void);
 
 			//Connextion between new request/accepted request and socket
 			int					i_send_message(int clientSockFd, std::string message) const;
@@ -66,6 +77,17 @@ class Server
 
 			//Main program
 			void				mainProgram(void);
+
+			//Parsing functions
+			int					isAlpha(char c);
+			void				requestParsing(int ClientFd);
+			void				chooseAction(void);
+
+
+			//Handle Signal
+			void				getSignal(int index);
+			void				handle_sigint(int signal);
+			static void			handle_sigint_static(int signal);
 
 			//Exception for error handling
 			class WrongPortException : public std::exception
@@ -113,9 +135,14 @@ class Server
 	private :
 
 			Server(void);
-			std::string				M_port;
-			std::string				M_pass_wd;
-			t_serv					*M_struct;
+			std::string					M_port;
+			std::string					M_pass_wd;
+			std::vector<std::string>	M_requestVector;
+			std::vector<std::string>	M_commands;
+			bool						M_working;
+			t_serv						*M_struct;
+			//command						command;
 };
+
 
 #endif

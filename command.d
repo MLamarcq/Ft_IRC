@@ -1,0 +1,1 @@
+command.o: command.cpp
