@@ -20,6 +20,7 @@
 #include <vector>
 #include "colors.hpp"
 #include <signal.h>
+#include <map>
 
 #include "command.hpp"
 
@@ -80,8 +81,11 @@ class Server
 
 			//Parsing functions
 			int					isAlpha(char c);
-			void				requestParsing(int ClientFd);
-			void				chooseAction(void);
+			int					requestParsing(int ClientFd);
+			int					fillVectorRequest(int count, std::string tmp);
+			int					fillCmdMap(void);
+			void				executeCmd(int i);
+			void				chooseAndExecuteAction(void);
 
 
 			//Handle Signal
@@ -135,12 +139,13 @@ class Server
 	private :
 
 			Server(void);
-			std::string					M_port;
-			std::string					M_pass_wd;
-			std::vector<std::string>	M_requestVector;
-			std::vector<std::string>	M_commands;
-			bool						M_working;
-			t_serv						*M_struct;
+			std::string							M_port;
+			std::string							M_pass_wd;
+			std::vector<std::string>			M_requestVector;
+			std::vector<std::string>			M_commands;
+			std::map<std::string, std::string>	M_cmdMap;
+			bool								M_working;
+			t_serv								*M_struct;
 			//command						command;
 };
 

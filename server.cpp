@@ -189,116 +189,183 @@ void	Server::i_handle_first_connexion(void)
 
 }
 
-void	Server::requestParsing(int ClientFd)
+int	Server::requestParsing(int ClientFd)
 {
 	char	buff[513];
 	int		reader;
+	size_t	find_r = 0;
+	size_t	find_n = 0;
+	int		count = 0;
 
 	reader = read(ClientFd, buff, 512);
 	if (reader == -1)
 	{
-		// throw(ErrorReadingException());
-		return ;
+		std::cout << "Error reading. Please check client socket." << std::endl;
+		return (0);
 	}
-	// std::cout << "c1" << std::endl;
 	buff[reader] = '\0';
-	int i = 0;
-	int count = 0;
-	// std::cout << "buff = " << buff << std::endl;
 	std::string tmp(buff);
 	// std::cout << "tmp = " << tmp << std::endl;
-	int size  = tmp.size();
-	bool toggle = false;
-	while (i < size)
-	{	
-		if (isAlpha(tmp[i]) == 1 && toggle == false)
+	size_t size  = tmp.size();
+	// std::cout << "Request size = " << size << std::endl;
+	while (find_n < size - 1)
+	{
+		find_r = tmp.find('\r', find_n + 1);
+		find_n = tmp.find('\n', find_n + 1);
+		if (find_r == std::string::npos || find_n == std::string::npos)
 		{
-			// std::cout << "On trouve une majuscule" << std::endl;
-			while (tmp[i] != ' ')
-				i++;
-			count++;
-			toggle = true;
-		} // pas fou
-		// else 
-		// {
-		// 	std::cout << "Wrong request format" << std::endl;
-		// 	return ;
-		// }
-		i++;
+			std::cout << "Wrong request format. Please report to IRC's request format" << std::endl;
+			return (0);
+		}
+		count++;
 	}
-	// std::cout << "count = "  << count << std::endl;
-	// std::cout << "c3" << std::endl;
-	std::string string_copy = tmp;
-	std::string temp;
-	size_t		token = 0;
-	i = 0;
+	std::cout << "find_r = " << find_r << std::endl;
+	std::cout << "find_n = " << find_n << std::endl;
+	std::cout << "count = " << count << std::endl;
+	std::cout << "Tout s'est bien passe" << std::endl;
+	if (fillVectorRequest(count, tmp) == 0)
+		return (0);
+	if (fillCmdMap() == 0)
+		return (0);
+	return (1);
+}
+
+int	Server::fillVectorRequest(int count, std::string tmp)
+{
+	size_t token = 0;
+	int i = 0;
 	while (i < count)
 	{
-		token = string_copy.find('\r');
-		//std::cout << "Premier token = " << token << std::endl;
-		if (token == std::string::npos)
-		{
-			std::cout << "Wrong request format, need '\r'" << std::endl;
-			return ;
-		}
+		std::string string_copy = tmp;
+		std::string temp;
 		token = string_copy.find('\n');
-		//std::cout << "token saut de ligne = " << token << std::endl;
 		if (token == std::string::npos)
 		{
-			std::cout << "Wrong request format, need '\n'" << std::endl;
-			return ;
+			std::cout << "Wrong request format. Please report to IRC's request format" << std::endl;
+			return (0);
 		}
 		temp = string_copy.substr(0, token);
-		// std::cout << "temp = " << temp << std::endl;
 		this->M_requestVector.push_back(temp);
-		// std::cout << "C4" << std::endl;
-		// std::vector<std::string>::iterator ite = this->M_requestVector.end();
-		// for (std::vector<std::string>::iterator it = this->M_requestVector.begin(); it != ite; it++)
-			// std::cout << "vector = " << *it << std::endl;
 		temp.erase();
 		string_copy.erase(0, token);
 		i++;
 	}
-	return ;
+	// std::vector<std::string>::iterator ite = this->M_requestVector.end();
+	// for (std::vector<std::string>::iterator it = this->M_requestVector.begin(); it != ite; it++)
+	// 	std::cout << "vector = " << *it << std::endl;
+	return (1);
 }
 
-void	Server::chooseAction(void)
+int	Server::fillCmdMap(void)
 {
-	std::vector<std::string>::iterator itc = this->M_commands.begin();
-	std::vector<std::string>::iterator itec = this->M_commands.end();
-	size_t	token = 0;
-	bool	toggle = false;
-	std::cout << "Je suis ici et la" << std::endl;
-	for (; itc != itec; itc++)
+	if (this->M_requestVector.empty())
 	{
-		std::cout << "Je rentre la" << std::endl;
-		std::vector<std::string>::iterator it = this->M_requestVector.begin();
-		std::vector<std::string>::iterator ite = this->M_requestVector.end();
-		std::cout << "Dans le vecteur : " << *it << std::endl;
-		// token = it->find("NICK");
+		std::cout << "Request vector empty" << std::endl;
+		return (0);
+	}
+	std::string first;
+	std::string second;
+	std::vector<std::string>::iterator it = this->M_requestVector.begin();
+	std::vector<std::string>::iterator ite = this->M_requestVector.end();
+	while (it != ite)
+	{
+		size_t space = it->find(' ');
+		if (space == std::string::npos)
+		{
+			std::cout << "Wrong request format. Please report to IRC's request format" << std::endl;
+			return (0);
+		}
+		first = it->substr(0, space);
+		std::cout << "first = " << first << std::endl;
+		second = it->substr(space, it->size());
+		std::cout << "second = " << second << std::endl;
+		this->M_cmdMap[first] = second;
+		it++;
+	}
+	std::map<std::string, std::string>::iterator m_it = this->M_cmdMap.begin();
+	std::map<std::string, std::string>::iterator m_ite = this->M_cmdMap.end();
+	while (m_it != m_ite)
+	{
+		std::cout << "La map = [" << m_it->first << "] = ";
+		std::cout << m_it->second << std::endl;
+		m_it++;
+	}
+	return (1);
+}
+
+void	Server::chooseAndExecuteAction(void)
+{
+	std::map<std::string, std::string>::iterator m_it = this->M_cmdMap.begin();
+	std::map<std::string, std::string>::iterator m_ite = this->M_cmdMap.end();
+	std::cout << "Je suis ici et la" << std::endl;
+	bool	toggle = false;
+	for (; m_it != m_ite; m_it++)
+	{
+		int i = 1;
+		toggle = false;
+		std::vector<std::string>::iterator it = this->M_commands.begin();
+		std::vector<std::string>::iterator ite = this->M_commands.end();
 		for (; it != ite; it++)
 		{
-			token = it->find(*(itc));
-			if (token != std::string::npos)
+			std::map<std::string, std::string>::iterator it_found = this->M_cmdMap.find(*(it));
+			//std::cout << "L'iterateur est = " << it_found->first <<std::endl;
+			if (it_found != this->M_cmdMap.end())
 			{
-				std::cout << "La valeur est dans le vecteur" << std::endl;
+				std::cout << "La commande = " << *it << std::endl;
+				// std::cout << "La commande existe !" << std::endl;
+				// std::cout << "Il s'agit de " << it_found->second << std::endl;
 				toggle = true;
-				break ;
+				executeCmd(i);
+				//on lance la fonction switch, on lui passe i
 			}
+			if (toggle == true)
+				break ;
+			i++;
 		}
-		if (toggle == true)
-			break ;
 	}
-	std::cout << "token du vecteur = " << token << std::endl << std::endl;
 	return ;
 }
 
+void	Server::executeCmd(int i)
+{
+	switch (i)
+	{
+		case 1 :
+		{
+			std::cout << "On lance NICK" << std::endl;
+			break ;
+		}
+		case 2 :
+		{
+			std::cout << "On lance PASS" << std::endl;
+			break ;
+		}
+		case 3 :
+		{
+			std::cout << "On lance USER" << std::endl;
+			break ;
+		}
+		case 4 :
+		{
+			std::cout << "On lance MODE" << std::endl;
+			break ;
+		}
+		default :
+		{
+			std::cout << "On ne doit pas rentrer ici normalement" << std::endl;
+			break ;
+		}
+	}
+	return ;
+}
 
 void	Server::i_handle_request(int i)
 {
-	requestParsing(i);
-	chooseAction();
+	if (requestParsing(i) == 0)
+		return ;
+	chooseAndExecuteAction();
 	this->M_requestVector.clear();
+	this->M_cmdMap.clear();
 }
 
 int		Server::isAlpha(char c)
@@ -475,4 +542,3 @@ const char *Server::SelectFunctionErrorException::what() const throw()
 }
 
 
-// std::string returnLine()
