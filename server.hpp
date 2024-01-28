@@ -84,8 +84,8 @@ class Server
 			int					requestParsing(int ClientFd);
 			int					fillVectorRequest(int count, std::string tmp);
 			int					fillCmdMap(void);
-			void				executeCmd(int i);
-			void				chooseAndExecuteAction(void);
+			void				executeCmd(int i, int clientFd);
+			void				chooseAndExecuteAction(int clientFd);
 
 
 			//Handle Signal

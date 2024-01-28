@@ -10,13 +10,19 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "command.hpp"
+
 // std::string		PASS();
 // std::string		NICK();
 // std::string		USER();
 // std::string		PING();
 // std::string		PONG();
 // std::string		OPER();
-// std::string		QUIT();
+std::string		command::QUIT(int fd)
+{
+    (void)fd;
+    return (" ");
+}
 // std::string		JOIN();
 // std::string		PART();
 // std::string		TOPIC();

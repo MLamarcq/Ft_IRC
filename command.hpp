@@ -59,7 +59,7 @@
 # define ERR_UMODEUNKNOWNFLAG(target)				RPL_PREFIX("501", "") + " " + target + " :Unknown MODE flag" + CLRF
 # define ERR_USERSDONTMATCH(target)					RPL_PREFIX("502", "") + " " + target + " :Cant change mode for other users" +  CLRF
 
-// #include "server.hpp"
+#include "server.hpp"
 
 class command {
 
@@ -76,7 +76,7 @@ class command {
 		std::string		PING();
 		std::string		PONG();
 		std::string		OPER();
-		std::string		QUIT();
+		std::string		QUIT(int fd);
 		std::string		JOIN();
 		std::string		PART();
 		std::string		TOPIC();

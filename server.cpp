@@ -86,6 +86,7 @@ void	Server::fill_commands_vector(void)
 	this->M_commands.push_back("KICK");
 	this->M_commands.push_back("PRIVMSG");
 	this->M_commands.push_back("WALLOPS");
+	this->M_commands.push_back("userhost");
 	return ;
 }
 
@@ -304,7 +305,7 @@ int	Server::fillCmdMap(void)
 	return (1);
 }
 
-void	Server::chooseAndExecuteAction(void)
+void	Server::chooseAndExecuteAction(int clientFd)
 {
 	std::map<std::string, std::string>::iterator m_it = this->M_cmdMap.begin();
 	std::map<std::string, std::string>::iterator m_ite = this->M_cmdMap.end();
@@ -326,7 +327,7 @@ void	Server::chooseAndExecuteAction(void)
 				// std::cout << "La commande existe !" << std::endl;
 				// std::cout << "Il s'agit de " << it_found->second << std::endl;
 				toggle = true;
-				executeCmd(i);
+				executeCmd(i, clientFd);
 				//on lance la fonction switch, on lui passe i
 			}
 			if (toggle == true)
@@ -337,8 +338,9 @@ void	Server::chooseAndExecuteAction(void)
 	return ;
 }
 
-void	Server::executeCmd(int i)
+void	Server::executeCmd(int i, int clientFd)
 {
+	(void)clientFd;
 	switch (i)
 	{
 		case 1 :
@@ -369,6 +371,7 @@ void	Server::executeCmd(int i)
 		case 6 :
 		{
 			std::cout << "On lance QUIT" << std::endl;
+			
 			break ;
 		}
 		case 7 :
@@ -416,6 +419,11 @@ void	Server::executeCmd(int i)
 			std::cout << "On lance WALLOPS" << std::endl;
 			break ;
 		}
+		case 16 :
+		{
+			std::cout << "On lance USER" << std::endl;
+			break ;
+		}
 		default :
 		{
 			std::cout << "On ne doit pas rentrer ici normalement" << std::endl;
@@ -429,7 +437,7 @@ void	Server::i_handle_request(int i)
 {
 	if (requestParsing(i) == 0)
 		return ;
-	chooseAndExecuteAction();
+	chooseAndExecuteAction(i);
 	this->M_requestVector.clear();
 	this->M_cmdMap.clear();
 }
