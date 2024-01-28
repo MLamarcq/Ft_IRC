@@ -73,8 +73,19 @@ void	Server::fill_commands_vector(void)
 {
 	this->M_commands.push_back("NICK");
 	this->M_commands.push_back("PASS");
-	this->M_commands.push_back("userhost");
+	this->M_commands.push_back("USER");
 	this->M_commands.push_back("MODE");
+	this->M_commands.push_back("PING");
+	this->M_commands.push_back("QUIT");
+	this->M_commands.push_back("OPER");
+	this->M_commands.push_back("JOIN");
+	this->M_commands.push_back("PART");
+	this->M_commands.push_back("KILL");
+	this->M_commands.push_back("NOTICE");
+	this->M_commands.push_back("TOPIC");
+	this->M_commands.push_back("KICK");
+	this->M_commands.push_back("PRIVMSG");
+	this->M_commands.push_back("WALLOPS");
 	return ;
 }
 
@@ -348,6 +359,61 @@ void	Server::executeCmd(int i)
 		case 4 :
 		{
 			std::cout << "On lance MODE" << std::endl;
+			break ;
+		}
+		case 5 :
+		{
+			std::cout << "On lance PING" << std::endl;
+			break ;
+		}
+		case 6 :
+		{
+			std::cout << "On lance QUIT" << std::endl;
+			break ;
+		}
+		case 7 :
+		{
+			std::cout << "On lance OPER" << std::endl;
+			break ;
+		}
+		case 8 :
+		{
+			std::cout << "On lance JOIN" << std::endl;
+			break ;
+		}
+		case 9 :
+		{
+			std::cout << "On lance PART" << std::endl;
+			break ;
+		}
+		case 10 :
+		{
+			std::cout << "On lance KILL" << std::endl;
+			break ;
+		}
+		case 11 :
+		{
+			std::cout << "On lance NOTICE" << std::endl;
+			break ;
+		}
+		case 12 :
+		{
+			std::cout << "On lance TOPIC" << std::endl;
+			break ;
+		}
+		case 13 :
+		{
+			std::cout << "On lance KICK" << std::endl;
+			break ;
+		}
+		case 14 :
+		{
+			std::cout << "On lance PRIVMSG" << std::endl;
+			break ;
+		}
+		case 15 :
+		{
+			std::cout << "On lance WALLOPS" << std::endl;
 			break ;
 		}
 		default :
