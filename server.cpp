@@ -340,7 +340,7 @@ void	Server::chooseAndExecuteAction(int clientFd)
 
 void	Server::executeCmd(int i, int clientFd)
 {
-	(void)clientFd;
+	
 	switch (i)
 	{
 		case 1 :
@@ -371,7 +371,7 @@ void	Server::executeCmd(int i, int clientFd)
 		case 6 :
 		{
 			std::cout << "On lance QUIT" << std::endl;
-			
+			commandObj->QUIT(clientFd, this);
 			break ;
 		}
 		case 7 :

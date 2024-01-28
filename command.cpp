@@ -18,9 +18,36 @@
 // std::string		PING();
 // std::string		PONG();
 // std::string		OPER();
-std::string		command::QUIT(int fd)
+
+command::command()
 {
-    (void)fd;
+
+}
+command::command(const command& copy)
+{
+    (void)copy;
+}
+command& command::operator=(const command& copy)
+{
+    (void) copy;
+    return (*this);
+}
+command::~command()
+{
+
+}
+
+std::string		command::QUIT(int fd, Server* serv)
+{
+
+	client * tempClient;
+	close(fd);
+	FD_CLR(fd, &(serv->M_struct->current_sockets));
+	tempClient = serv->findClientBySocket(fd);
+	if (tempClient != NULL)
+		tempClient->goodBy();
+	if (tempClient != NULL)
+		serv->eraseClientFromList(tempClient->getNickName());
     return (" ");
 }
 // std::string		JOIN();

@@ -25,3 +25,10 @@ Les ajouts par rapport au parsing / gestion des requetes :
 		- Ensuite on rentre dans chooseAndExecuteAction. Ici on utilise le premier vecteurs qui contient les commandes en brut (le 						vecteur s'appelle M_command) et on compare les commandes en brut avec les clefs de la map dams une double boucle. Au 				sein de cette boucle on fait evoluer un iterateur i qui avance en meme temps que le vecteur qui contient les commandes. 				Ce qui signifie que i suit les commande,  exemple : si i = 1, on est sur NICK, si i = 2, on est sur PASS etc. Au 					moment ou la cle est trouvee, on passe i dans une fonction qui utilise le switch/case pour lancer les fonctions qui 				executeront les commandes.
 
 		- J'ai laisser des prints pour que l'on voit bien le comportements
+
+IMRANE CHANGEMENT :
+- ajout clientFd en param dans chooseAndExecuteAction et excecuteCmd
+- Passage de M_struct private à public
+- Ajout de l'objet command dans la structure de Serveur
+- ajout de la class Serveur dans la class command
+- création de la command QUIT 

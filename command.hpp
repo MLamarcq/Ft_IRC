@@ -61,6 +61,7 @@
 
 #include "server.hpp"
 
+class Server;
 class command {
 
 	public:
@@ -76,7 +77,7 @@ class command {
 		std::string		PING();
 		std::string		PONG();
 		std::string		OPER();
-		std::string		QUIT(int fd);
+		std::string		QUIT(int fd, Server* serv);
 		std::string		JOIN();
 		std::string		PART();
 		std::string		TOPIC();

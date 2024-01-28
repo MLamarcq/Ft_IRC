@@ -93,6 +93,10 @@ class Server
 			void				handle_sigint(int signal);
 			static void			handle_sigint_static(int signal);
 
+			//geter for la structure
+
+			//seter for la structure
+
 			//Exception for error handling
 			class WrongPortException : public std::exception
 			{
@@ -136,6 +140,7 @@ class Server
 						const char *what() const throw();
 			};
 
+		t_serv								*M_struct;
 	private :
 
 			Server(void);
@@ -145,8 +150,8 @@ class Server
 			std::vector<std::string>			M_commands;
 			std::map<std::string, std::string>	M_cmdMap;
 			bool								M_working;
-			t_serv								*M_struct;
-			//command						command;
+			//t_serv								*M_struct;
+			command								*commandObj;
 };
 
 
