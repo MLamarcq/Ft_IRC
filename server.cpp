@@ -408,7 +408,7 @@ std::string	Server::chooseAndExecuteAction(int clientFd)
 				// std::cout << "Il s'agit de " << it_found->second << std::endl;
 				toggle = true;
 				//on lance la fonction switch, on lui passe i
-				returnValue = executeCmd(i, clientFd);
+				returnValue = executeCmd(i, clientFd, "empty");
 				if (returnValue == "WRONG PASS")
 					return ("WRONG PASS");
 				std::cout << "c2.3\n";
@@ -429,9 +429,8 @@ std::string	Server::chooseAndExecuteAction(int clientFd)
 	return (" ") ;
 }
 
-std::string	Server::executeCmd(int i, int clientFd)
+std::string	Server::executeCmd(int i, int clientFd, std::string parameter)
 {
-	
 	switch (i)
 	{
 		case 1 :
@@ -505,6 +504,13 @@ std::string	Server::executeCmd(int i, int clientFd)
 		case 8 :
 		{
 			std::cout << "On lance JOIN" << std::endl;
+			client *client1 = this->findClientBySocket(clientFd);
+			if (!client1)
+			{
+				std::cout << "Client doesn't exist" << std::endl;
+				break ;
+			}
+			commandObj->JOIN(client1, parameter, this);
 			break ;
 		}
 		case 9 :
@@ -570,6 +576,60 @@ std::string	Server::executeCmd(int i, int clientFd)
 		}
 	}
 	return ("nothing");
+}
+
+std::list<channel *> Server::getListOfChannels(void) const
+{
+	return (this->M_listOfChannels);
+}
+
+void	Server::setNewChannel(channel *chan)
+{
+	if(!chan)
+	{
+		std::cout << "Channel doesn't exist" << std::endl;
+		return ;
+	}
+	this->M_listOfChannels.push_back(chan);
+	return ;
+}
+
+void	Server::addClientToChannel(client *client1, std::string parameter)
+{
+	if (!client1)
+	{
+		std::cout << "Client doesn't exist" << std::endl;
+		return ;
+	}
+	if (parameter.empty())
+	{
+		std::cout << "Channel name empty, please give a complete name" << std::endl;
+		return ;
+	}
+	// std::cout << "On arrive bien jusque la" << std::endl;
+	std::list<channel *>::iterator it = this->M_listOfChannels.begin();
+	std::list<channel *>::iterator ite = this->M_listOfChannels.end();
+	while (it != ite)
+	{
+		if ((*it)->getName().compare(parameter) == 0)
+		{
+			(*it)->addClientToTheChannel(client1);
+			(*it)->printMap();
+			// std::cout << "C1" << std::endl;
+			break ;
+		}
+		it++;
+	}
+	// std::cout << "C2" << std::endl;
+	return ;
+}
+
+
+bool	Server::checkChannel(void) const
+{
+	if (this->M_listOfChannels.empty())
+		return (false);
+	return (true);
 }
 
 void	Server::i_handle_request(int i)

@@ -6,7 +6,7 @@
 /*   By: mlamarcq <mlamarcq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/01 12:12:15 by mlamarcq         ###   ########.fr       */
+/*   Updated: 2024/02/01 12:53:10 by mlamarcq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,8 +82,8 @@ std::string		command::USER(int fd, Server* serv)
                 return (ERR_NEEDMOREPARAMS(clientTmp->getNickName(), temp));
             std::cout << "c2.4.1.4\n";
             std::cout << "TABSPLIT[0] = " << tabSplit[0] << std::endl;
-            if (serv->findClientByUserName(tabSplit[0]) != NULL)
-                return (ERR_ALREADYREGISTRED(tabSplit[0]));
+           // if (serv->findClientByUserName(tabSplit[0]) != NULL)
+            //    return (ERR_ALREADYREGISTRED(tabSplit[0]));
             std::cout << "c2.4.1.5\n";
             std::string name = tabSplit[0];
             name.append(clientTmp->getNickName());
@@ -103,8 +103,8 @@ std::string		command::USER(int fd, Server* serv)
             if (count < 3)
                 return (ERR_NEEDMOREPARAMS(clientTmp->getNickName(), temp));
             std::cout << "c2.4.1.7\n";
-            if (serv->findClientByUserName(tabSplit[0]) != NULL)
-                return (ERR_ALREADYREGISTRED(tabSplit[0]));
+            //if (serv->findClientByUserName(tabSplit[0]) != NULL)
+              //  return (ERR_ALREADYREGISTRED(tabSplit[0]));
             std::cout << "c2.4.1.8\n";
             clientTmp->setUserName(tabSplit[0]);
             clientTmp->setMode(tabSplit[1]);
@@ -188,6 +188,74 @@ std::string		command::PASS(int fd, Server* serv)
     if (temp.find(serv->M_pass_wd) == std::string::npos)
         return (ERR_PASSWDMISMATCH(clientTmp->getNickName()));
     return ("nothing");
+}
+
+std::string		command::JOIN(client *client1, std::string parameter, Server *serv)
+{
+	if (parameter.empty())
+	{
+		std::cout << "In order to join a channel, pease refer a name" << std::endl;
+		return (" ");
+	}
+	if (serv->checkChannel() == false)
+	{
+		std::cout << "No channel in the list, it will be the first !" << std::endl;
+		channel *new_one = new channel;
+		//faire une fonction dans client pour delete, utiliser algo for each : delete (it);
+		//ou utiliser QUIT
+		new_one->setName(parameter);
+		if (new_one->setPassword() == 0)
+		{
+			delete new_one;
+			std::cout << "ERROR" << std::endl;
+			return (" ");
+		}
+		new_one->setListofClient(client1);
+		new_one->setOperators(client1);
+		serv->setNewChannel(new_one);
+		return (" ");
+	}
+	// std::cout << "On passe la" << std::endl;
+	std::list<channel *> listOfChannels = serv->getListOfChannels();
+	std::list<channel *>::iterator it = listOfChannels.begin();
+	std::list<channel *>::iterator ite = listOfChannels.end();
+	bool found = false;
+	while (it != ite)
+	{
+		// std::cout << "Parameter = " << parameter << std::endl;
+		// std::cout << "Channel name = " << (*it)->getName() << std::endl;
+		if ((*it)->getName().compare(parameter) == 0)
+		{
+			std::cout << "Channel found !" << std::endl;
+			found = true;
+			break ;
+		}
+		it++;
+	}
+	if (found == false)
+	{
+		std::cout << "Channel doesn't exist, let's create it" << std::endl;
+		channel *new_one = new channel;
+		//faire une fonction dans client pour delete, utiliser algo for each : delete (it);
+		new_one->setName(parameter);
+		if (new_one->setPassword() == 0)
+		{
+			delete new_one;
+			// std::cout << "ERROR" << std::endl;
+			return (" ");
+		}
+		new_one->setListofClient(client1);
+		new_one->setOperators(client1);
+		serv->setNewChannel(new_one);
+		return (" ");
+	}
+	serv->addClientToChannel(client1, parameter);
+	// std::cout << "Parameter in JOIN = " << parameter << std::endl;
+	// std::cout << "Client1 nickname in JOIN : " << client1->getNickName() << std::endl;
+	// std::cout << "Client1 FD in JOIN : " << client1->getsocketFd() << std::endl;
+	(void)client1;
+	(void) found;
+	return (" ");
 }
 // std::string		JOIN();
 // std::string		PART();

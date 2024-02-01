@@ -4,6 +4,7 @@
 
 #include "server.hpp"
 class channel;
+
 class client {
 
     public:
@@ -56,7 +57,7 @@ class client {
         int port;
         char *ip;
         int numberChannelJoined;
-        std::list<channel *> listOfChannels;
+        // std::list<channel *> listOfChannels;
 
 };
 #endif

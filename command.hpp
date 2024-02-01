@@ -6,7 +6,7 @@
 /*   By: mlamarcq <mlamarcq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/01 12:20:44 by mlamarcq         ###   ########.fr       */
+/*   Updated: 2024/02/01 12:48:25 by mlamarcq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,10 @@
 
 #include "server.hpp"
 
+class client;
 class Server;
+class channel;
+
 class command {
 
 	public:
@@ -78,7 +81,6 @@ class command {
 		std::string		PONG();
 		std::string		OPER();
 		std::string		QUIT(int fd, Server* serv);
-		std::string		JOIN();
 		std::string		PART();
 		std::string		TOPIC();
 		std::string		KICK();
@@ -87,6 +89,8 @@ class command {
 		std::string		NOTICE();
 		std::string		KILL();
 		std::string		WALLOPS();
+		std::string		JOIN(client *client1, std::string parameter, Server *serv);
+
 		std::string		bot();
 
 

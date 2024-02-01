@@ -25,6 +25,7 @@
 #include <string>
 #include <iomanip>
 
+#include "channel.hpp"
 #include "command.hpp"
 
 typedef struct s_serv
@@ -39,6 +40,7 @@ typedef struct s_serv
 } t_serv;
 
 class client;
+class channel;
 class command;
 class Server
 {
@@ -91,7 +93,7 @@ class Server
 			int					requestParsing(int ClientFd);
 			int					fillVectorRequest(int count, std::string tmp);
 			int					fillCmdMap(void);
-			std::string			executeCmd(int i, int clientFd);
+			std::string			executeCmd(int i, int clientFd, std::string parameter);
 			std::string				chooseAndExecuteAction(int clientFd);
 
 
@@ -99,6 +101,13 @@ class Server
 			void				getSignal(int index);
 			void				handle_sigint(int signal);
 			static void			handle_sigint_static(int signal);
+
+			//channel
+			std::list<channel *> getListOfChannels(void) const;
+			void				setNewChannel(channel *chan);
+			void				addClientToChannel(client *client1, std::string parameter);
+			bool				checkChannel(void) const;
+
 
 			//geter for la structure
 
@@ -160,6 +169,7 @@ class Server
 			bool								M_working;
 			//t_serv								*M_struct;
 			command								*commandObj;
+			std::list<channel *> 				M_listOfChannels;
 };
 
 std::string			intTostring(int number);
