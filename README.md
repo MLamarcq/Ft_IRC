@@ -2,7 +2,7 @@ Meilleur parsing + switch/case -> mael + parsing dans first_connection
 
 Commandes : 
 
-Imrane : PING/PONG, PASS, NICK, QUIT, USER, MODE
+Imrane : PING/PONG, PASS, NICK, QUIT, USER
 
 Mael : OPER, JOIN, PART, MODE, KILL, NOTICE
 
