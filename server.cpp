@@ -334,7 +334,7 @@ client*	Server::findClientByUserName(std::string clientUserName)
 		//if (temp.find(clientUserName) != std::string::npos)
 		//	return (*it);
 		//std::cout << "USERNAME FIND IS " << temp << std::endl;
-		if (clientUserName.find(temp) != std::string::npos)
+		if (temp.find(clientUserName) != std::string::npos)
 		{
 			std::cout << "USERNAME FIND IS " << temp << std::endl;
 			std::cout << "CLIENT USERNAME IS " << clientUserName << std::endl;
@@ -600,9 +600,9 @@ std::string	Server::executeCmd(int i, int clientFd)
 		}
 		case 3 :
 		{
-			//client* clientTmp;
+			client* clientTmp;
 
-			//clientTmp = this->findClientBySocket(clientFd);
+			clientTmp = this->findClientBySocket(clientFd);
 			std::cout << "On lance USER" << std::endl;
 			std::cout << "c2.4.1\n";
 			std::string message = commandObj->USER(clientFd, this);
@@ -611,13 +611,13 @@ std::string	Server::executeCmd(int i, int clientFd)
 				i_send_message(clientFd,message);
 				return ("WRONG USER");
 			}
-			/*
+			
 			std::cout << " -------USER INFO------ " << std::endl;
 			std::cout << "USERNAME: " << clientTmp->getUserName() << std::endl;
 			std::cout << "MODE: " << clientTmp->getMode() << std::endl;
 			std::cout << "HOSTNAME: " << clientTmp->getHostName() << std::endl;
 			std::cout << "REALNAME: " << clientTmp->getRealName() << std::endl;
-			*/
+			
 			break ;
 		}
 		case 4 :
@@ -722,9 +722,9 @@ std::string	Server::executeCmd(int i, int clientFd)
 		}
 		case 16 :
 		{
-			//client* clientTmp;
+			client* clientTmp;
 
-			//clientTmp = this->findClientBySocket(clientFd);
+			clientTmp = this->findClientBySocket(clientFd);
 			std::cout << "On lance USER HOST" << std::endl;
 			std::string message = commandObj->USER(clientFd, this);
 			if (message.find("nothing") == std::string::npos)
@@ -732,13 +732,13 @@ std::string	Server::executeCmd(int i, int clientFd)
 				i_send_message(clientFd,message);
 				return ("WRONG USER");
 			}
-			/*
+			
 			std::cout << " -------USER INFO------ " << std::endl;
 			std::cout << "USERNAME: " << clientTmp->getUserName() << std::endl;
 			std::cout << "MODE: " << clientTmp->getMode() << std::endl;
 			std::cout << "HOSTNAME: " << clientTmp->getHostName() << std::endl;
 			std::cout << "REALNAME: " << clientTmp->getRealName() << std::endl;
-			*/
+			
 			break ;
 		}
 		default :
