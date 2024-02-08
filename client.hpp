@@ -10,7 +10,7 @@ class client {
     public:
         client();
         client(std::string hostname, int fd);
-        client(const client& copy);
+        client(const client *copy);
         client& operator=(const client& copy);
         ~client();
 

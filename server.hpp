@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <string>
 #include <iomanip>
+#include <sstream>
 
 #include "channel.hpp"
 #include "command.hpp"
@@ -70,9 +71,12 @@ class Server
 			//Getters and init constructor
 			std::string			getPort(void) const;
 			std::string			getPass_Wd(void) const;
+			std::string			getChanName(void) const;
+			void				setChanName(std::string name);
 			void				Copy_Struct(Server const &rhs);
 			void				init_struct(void);
 			void				fill_commands_vector(void);
+			std::vector<std::vector<std::string> > getCmdArgs(void) const;
 
 			//All about socket
 			void				Setup_Socket(void);
@@ -93,8 +97,9 @@ class Server
 			int					requestParsing(int ClientFd);
 			int					fillVectorRequest(int count, std::string tmp);
 			int					fillCmdMap(void);
-			std::string			executeCmd(int i, int clientFd, std::string parameter);
-			std::string				chooseAndExecuteAction(int clientFd);
+			std::string			executeCmd(int i, int clientFd);
+			std::string			chooseAndExecuteAction(int clientFd);
+			// void				putRequestArgInVector(void);
 
 
 			//Handle Signal
@@ -105,9 +110,12 @@ class Server
 			//channel
 			std::list<channel *> getListOfChannels(void) const;
 			void				setNewChannel(channel *chan);
-			void				addClientToChannel(client *client1, std::string parameter);
+			int					addClientToChannel(client *client1, std::vector<std::string> parameter);
 			bool				checkChannel(void) const;
 
+
+			void 				handle_sigpipe(int signal);
+			static void			handle_sigpipe_static(int signal, Server* serverInstance);
 
 			//geter for la structure
 
@@ -157,22 +165,26 @@ class Server
 			};
 
 		t_serv								*M_struct;
-		std::map<std::string, std::string>	M_cmdMap;
+		std::map<std::string, std::vector<std::string> >	M_cmdMap;
 		std::string							M_pass_wd;
 	
 	private :
 
 			Server(void);
-			std::string							M_port;
-			std::vector<std::string>			M_requestVector;
-			std::vector<std::string>			M_commands;
-			bool								M_working;
-			//t_serv								*M_struct;
-			command								*commandObj;
-			std::list<channel *> 				M_listOfChannels;
+			std::string										M_port;
+			std::vector<std::string>						M_requestVector;
+			std::vector<std::string>						M_commands;
+			// std::vector<std::vector<std::string> >			M_args;
+			bool											M_working;
+			//t_serv										*M_struct;
+			command											*commandObj;
+			std::list<channel *> 							M_listOfChannels;
+			std::string										M_chanName;
 };
 
 std::string			intTostring(int number);
+std::vector<std::string> split_string_v2(const std::string& s, char delimiter);
+std::string const	getTime();
 
 
 #endif

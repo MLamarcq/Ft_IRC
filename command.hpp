@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   command.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlamarcq <mlamarcq@student.42.fr>          +#+  +:+       +#+        */
+/*   By: imoumini <imoumini@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/01 12:48:25 by mlamarcq         ###   ########.fr       */
+/*   Updated: 2024/02/08 16:48:15 by imoumini         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,10 @@
 #define COMMAND_HPP
 
 # define CLRF	"\r\n"
-# define SERVER_NAME				"ircserv"
-# define SERVER_HOSTNAME			std::string(SERVER_NAME) + ".fr"
+//# define SERVER_NAME				"ircserv"
+# define SERVER_NAME				"localhost"
+//# define SERVER_HOSTNAME			std::string(SERVER_NAME) + ".fr"
+#define SERVER_HOSTNAME				std::string("localhost")
 # define SERVER_VERSION				"v4.2"
 # define CHANNEL_MODES				"klnt"
 # define USER_MODES					"io"
@@ -52,12 +54,14 @@
 # define ERR_ALREADYREGISTRED(nick)					RPL_PREFIX("462", nick) + " :Unauthorized command (already registered)" + CLRF
 # define ERR_PASSWDMISMATCH(nick)					RPL_PREFIX("464", nick) + " :Password incorrect" + CLRF
 # define ERR_CHANNELISFULL(nick, chan)				RPL_PREFIX("471", nick) + " " + chan + " :Cannot join channel (+l)" + CLRF
+# define ERR_BANNEDFROMCHAN(nick, chan)				RPL_PREFIX("474", nick) + " " + chan + " :Bannded from channel (+b)" + CLRF
 # define ERR_BADCHANNELKEY(nick, chan)				RPL_PREFIX("475", nick) + " " + chan + " :Cannot join channel (+k)" + CLRF
 # define ERR_NOPRIVILEGES(nick)						RPL_PREFIX("481", nick) + " :Permission Denied- You're not an IRC operator" + CLRF
-# define ERR_CHANOPRIVSNEEDED(channel)				RPL_PREFIX("482", "") + " " + channel + " :You're not channel operator" + CLRF
+# define ERR_CHANOPRIVSNEEDED(channel)				RPL_PREFIX("482", "") + channel + " :You're not channel operator\r\n"
 # define ERR_NOOPERHOST(nick)						RPL_PREFIX("491", nick) + " :No O-lines for your host" + CLRF
 # define ERR_UMODEUNKNOWNFLAG(target)				RPL_PREFIX("501", "") + " " + target + " :Unknown MODE flag" + CLRF
 # define ERR_USERSDONTMATCH(target)					RPL_PREFIX("502", "") + " " + target + " :Cant change mode for other users" +  CLRF
+#define PONG(nickname) (std::string(":") + SERVER_NAME + " PONG " + SERVER_NAME + " :" + SERVER_NAME + "\r\n")
 
 #include "server.hpp"
 
@@ -77,21 +81,25 @@ class command {
 		std::string		PASS(int fd, Server *serv);
 		std::string		NICK(int fd, Server *serv);
 		std::string		USER(int fd, Server *serv);
-		std::string		PING();
-		std::string		PONG();
+		std::string		PING(int fd, Server *serv);
+		//std::string		PONG();
 		std::string		OPER();
 		std::string		QUIT(int fd, Server* serv);
 		std::string		PART();
 		std::string		TOPIC();
 		std::string		KICK();
-		std::string		MODE();
+		int				MODE(client *client1, Server *serv);
 		std::string		PRIVMSG();
 		std::string		NOTICE();
 		std::string		KILL();
 		std::string		WALLOPS();
-		std::string		JOIN(client *client1, std::string parameter, Server *serv);
+		int		JOIN(client *client1, Server *serv);
 
 		std::string		bot();
+
+		std::vector<std::string>	parsTemp(std::vector<std::string> temp);
+
+		int	handleCmd(client *client1, Server *serv, std::string cmd);
 
 
 };

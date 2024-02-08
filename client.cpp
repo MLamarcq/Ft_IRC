@@ -14,14 +14,14 @@ client::client(std::string hostNameParam, int fd) : nickName("Default"), realNam
 
 }
 
-client::client(const client& copy) : nickName(copy.nickName), realName(copy.realName),userName(copy.realName),
-					hostName(copy.hostName),isOperator(copy.isOperator),welcomeMessageSent(copy.welcomeMessageSent),
-					socketFd(copy.socketFd), port(copy.port), ip(copy.ip),numberChannelJoined(copy.numberChannelJoined)  
+client::client(const client *copy) : nickName(copy->nickName), realName(copy->realName),userName(copy->realName),
+					hostName(copy->hostName),isOperator(copy->isOperator),welcomeMessageSent(copy->welcomeMessageSent),
+					socketFd(copy->socketFd), port(copy->port), ip(copy->ip),numberChannelJoined(copy->numberChannelJoined)  
 {
 
 }
 
-client& client::operator=(const client& copy)
+client& client::operator=(const client &copy)
 {
 	(void)copy;
 	return (*this);
