@@ -6,7 +6,7 @@
 /*   By: imoumini <imoumini@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/08 17:35:17 by imoumini         ###   ########.fr       */
+/*   Updated: 2024/02/08 17:59:53 by imoumini         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,11 +107,11 @@ std::string		command::USER(int fd, Server* serv)
 			std::cout << "c2.4.1.4\n";
 			//std::cout << "TABSPLIT[0] = " << tabSplit[0] << std::endl;
 
-		    if (serv->findClientByUserName(temp[0]) != NULL)
-			{
-				std::cout << "USER ALREADY EXIST" << std::endl;
-				return (ERR_ALREADYREGISTRED(temp[0]));
-			}
+		    // if (serv->findClientByUserName(temp[0]) != NULL)
+			// {
+			// 	std::cout << "USER ALREADY EXIST" << std::endl;
+			// 	return (ERR_ALREADYREGISTRED(temp[0]));
+			// }
 			std::cout << "c2.4.1.5\n";
 			clientTmp->setUserName(temp[0].append(clientTmp->getNickName()));
 			std::cout << "c2.4.1.6\n";
@@ -150,11 +150,11 @@ std::string		command::USER(int fd, Server* serv)
 			for (size_t i = 0; i < temp.size(); i++)
 				std::cout << "temp[" << i << "] = " << temp[i] << std::endl;
 			std::cout << "c2.4.1.7\n";
-			if (serv->findClientByUserName(temp[0].append(clientTmp->getNickName()) ) != NULL)
-			{
-				std::cout << "USER ALREADY EXIST" << std::endl;
-				return (ERR_ALREADYREGISTRED(temp[0]));
-			}
+			// if (serv->findClientByUserName(temp[0].append(clientTmp->getNickName()) ) != NULL)
+			// {
+			// 	std::cout << "USER ALREADY EXIST" << std::endl;
+			// 	return (ERR_ALREADYREGISTRED(temp[0]));
+			// }
 			std::cout << "c2.4.1.8\n";
 			clientTmp->setUserName(temp[0].append(clientTmp->getNickName()));
 			clientTmp->setMode(temp[1]);
