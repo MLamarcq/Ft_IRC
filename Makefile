@@ -1,4 +1,4 @@
-NAME		= irc
+NAME		= ircserv
 CC			= c++
 FLAGS		= -Wall -Werror -Wextra -std=c++98 -g -MMD
 SRC			= main.cpp \
@@ -7,6 +7,7 @@ client.cpp \
 channel.cpp \
 ft_split.cpp \
 command.cpp \
+cmd_mode_utils.cpp \
 
 
 OBJ			= $(SRC:.cpp=.o)

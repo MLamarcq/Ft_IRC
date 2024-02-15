@@ -3,12 +3,59 @@
 /*                                                        :::      ::::::::   */
 /*   command.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: imoumini <imoumini@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mlamarcq <mlamarcq@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/08 16:48:15 by imoumini         ###   ########.fr       */
+/*   Updated: 2024/02/15 12:09:52 by mlamarcq         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+// a la fin de chaque commande faut mettre control+V suivit de contol+m
+	// j'ai l'impression que c pas le cas dans tous les repo
+	// en fait suffit de faire en sorte de regarder que \n et ça va fonctionner sans control machin
+
+
+// voir si dans les autres repo aussi quand j'envoi des fausses commande nc quitte
+	// ne quitte pas dans les autre repo
+
+
+
+
+// envoyer command partielle
+	// quand j'envoie control D ça prend bien seulement en compte les derniers truc que g tapé meme si g pas effacer le precedent
+	// voir comment ça fonctionne dans les autre repo
+		// j'ai l'impression que ignore et au final ne prend que le dernier truc
+		// en fait quand je fais control D ça bloque le terminal et je peux pas supp le prec
+		// je peux seulement continuer a ecrire et si je met pas un espace entre le nom de la command et larg ça fonctionne pas
+		// du coup normalement notre truc devrait déjà fonctionner
+			//on prend juste la dernière et on sfait pas chier, a tester
+			// en fait je peux pas tester car nc quitte avant après un NI ctr+D et CK ctr+ D
+			// régler ça et normalement ça devrait fonctionner
+			// en fait il faut que je vois ce que les repo recoivent et envoi a chaque requete nc
+			// comme ça je sais ce qu'ils envoient pour pas qu'il quitte
+				// ma théorie c que a chaque message qu'il reçoit il envoi un truc et si nc 
+				// ne recoit pas de message pendant un certain nbr de message il quitte
+				// en fait g capté c pas une question d'envoi
+				// c jujste que mon program va pas à la suite quand il voit pas d'espace
+				// et si je rajoute un espace bah meme si il fait r bah ça fonctionne
+				// du coup faut que j'arrive à gérer si ya pas d'espacde
+			// g reussi a gerer les fausses commandes sans quitter
+			//voir pk control D 2 fois fait quitter
+			//en fait la je peux fgaire autant de control D que je veux
+			// mais ça sépare bien les commande lol
+			// comment regrouper le tout ?
+			//tester avec plusieurs command
+
+
+
+			// g l'impression qu'il envoi rien bizzare, suivre le parcours du message dan sle code clbouche
+			//yanou les commande fractionné ont tout cours l'air de pas de fonctionner, retester avec puis voir parcours du message
+			// tester avec d'autre repo
+
+		// faire en sorte que quand je quitte avec nc de manière inoipiné le client est deco
+
+	// faire strategie pour tout recouper
+// faire test sujet de correction
 
 #ifndef COMMAND_HPP
 #define COMMAND_HPP
@@ -22,6 +69,9 @@
 # define CHANNEL_MODES				"klnt"
 # define USER_MODES					"io"
 # define RPL_PREFIX(code, nick)		std::string(":" + SERVER_HOSTNAME + " " + code + " " + nick)
+# define CLIENT_ID(nickname, username, command) (":" + nickname + "!~" + username + "@" + SERVER_NAME + " " + command + " ")
+
+
 //		RPL
 # define RPL_WELCOME(nick, user, host)			RPL_PREFIX("001", nick) + " :Welcome to the " + SERVER_NAME + " Network, " + nick + "!" + user + "@" + host + CLRF
 # define RPL_YOURHOST(nick)						RPL_PREFIX("002", nick) + " :Your host is " + SERVER_HOSTNAME + ", running version " + SERVER_VERSION + CLRF
@@ -63,6 +113,37 @@
 # define ERR_USERSDONTMATCH(target)					RPL_PREFIX("502", "") + " " + target + " :Cant change mode for other users" +  CLRF
 #define PONG(nickname) (std::string(":") + SERVER_NAME + " PONG " + SERVER_NAME + " :" + SERVER_NAME + "\r\n")
 
+# define ERR_UNKNOWNMODE(nick, chan)				RPL_PREFIX("472", nick) + " " + chan + " is unknown mode char to me" + CLRF
+# define ERR_INVITEONLYCHAN(nick, channel)			(std::string(":") + SERVER_NAME + " 473 " + nick + " " + channel + " :Cannot join channel (+i)\r\n")
+# define MODE_CHANNEL_NEWMDP(nickname, username, channel, mode, pass)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " password is now :" + pass + "\r\n")
+# define MODE_CHANNEL_CLEARMDP(nickname, username, channel, mode)			(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " password is now erased" + "\r\n")
+# define MODE_CHANNEL_NOWOP(nickname, username, channel, mode, name)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + name + " is now an operator" + "\r\n")
+# define MODE_CHANNEL_NOMOREOP(nickname, username, channel, mode, name)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + name + " is no longer an operator" + "\r\n")
+# define MODE_CHANNEL_CLIENTLIMIT(nickname, username, channel, mode, nb)	(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + "client limit is now " + nb + "\r\n")
+# define MODE_CHANNEL_NOCLIENTLIMIT(nickname, username, channel, mode)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + "no more client limit" + "\r\n")
+# define MODE_CHANNEL_NO_INVITE(nickname, username, channel, mode) 			(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + "(invite_only) remove " + "\r\n")
+# define MODE_CHANNEL_YES_INVITE(nickname, username, channel, mode)			(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + "(invite_only) add. The channel is now in restricted mode." + "\r\n")
+
+# define MODE_UNKNOW_MODE(nickname, username, channel, mode)				(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " is unknown mode char to me" + "\r\n")
+# define MODE_TOPIC_OFF(nickname, username, channel, mode)					(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " Only operators can now change channel's topic." + "\r\n")
+# define MODE_TOPIC_ON(nickname, username, channel, mode)					(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " Channel's topic can now be change by everyone." + "\r\n")
+
+# define MODE_NEEDMOREPARAMS(nickname, username, channel, mode)				(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " Error. Need more prarameters." + "\r\n")
+
+// # define NOTONCHANNEL(nickname, username, channel) 							(CLIENT_ID(nickname, username, "") + channel + " Error. You are not on that channel.\r\n")
+#define NOTONCHANNEL(nickname, username, channel) 							(std::string(":") + SERVER_NAME + " 442 " + nickname + " " + channel + " :You are not on that channel\r\n")
+
+# define NOSUCHCHANNEL(nickname, username, channel)							(CLIENT_ID(nickname, username, "") + " " + channel + " Error. No such channel." + "\r\n")
+// # define TOPIC_IS_OFF(nick, chan)											(std::string(":") + SERVER_NAME + " " + nick + " :Topic changes desabled on " + chan + " !" + CLRF)
+# define ERR_USERONCHANNEL(nickname, username, channel, name)				(CLIENT_ID(nickname, username, "") + " 443 " + channel + " " + name + " :is already on channel." + "\r\n")
+// # define ERR_NOSUCHNICK(nickname, username, name)							(RPL_PREFIX("401", nickname) + " " + name + " :no such nick" + "\r\n")
+# define INVITE_ON_CHAN(nickname, username, channel, name)					(CLIENT_ID(nickname, username, "") + " " + name + " You are invited on " + channel + " by " + nickname + "\r\n")
+# define NEEDMOREPARAMS(nickname, username, cmd)							(CLIENT_ID(nickname, username, "")  + cmd + " Error. Need more prarameters." + "\r\n")
+# define PRIVMSG_CHAN(nickname, username, dest, msg) 						(CLIENT_ID(nickname, username, "PRIVMSG") + dest + " :" + msg + "\r\n")
+# define PART_CHAN(nickname, username, dest, msg) 							(CLIENT_ID(nickname, username, "PART") + dest + " :" + msg + "\r\n")
+
+
+
 #include "server.hpp"
 
 class client;
@@ -85,22 +166,24 @@ class command {
 		//std::string		PONG();
 		std::string		OPER();
 		std::string		QUIT(int fd, Server* serv);
-		std::string		PART();
-		std::string		TOPIC();
 		std::string		KICK();
-		int				MODE(client *client1, Server *serv);
-		std::string		PRIVMSG();
 		std::string		NOTICE();
 		std::string		KILL();
 		std::string		WALLOPS();
-		int		JOIN(client *client1, Server *serv);
+		int				TOPIC(client *client1, Server *serv);
+		int				MODE(client *client1, Server *serv);
+		int				JOIN(client *client1, Server *serv);
+		int				INVITE(client *client1, Server *serv);
+		int				PRIVMSG(client *client1, Server *serv);
+		int				PART(client *client1, Server *serv);
 
 		std::string		bot();
 
 		std::vector<std::string>	parsTemp(std::vector<std::string> temp);
 
 		int	handleCmd(client *client1, Server *serv, std::string cmd);
-
+		int			whatArg(std::vector<std::string> temp);
+		int			whatSign(std::vector<std::string> temp);
 
 };
 #endif

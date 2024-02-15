@@ -12,6 +12,7 @@ int main(int argc, char **argv)
 	}
 	std::string port(argv[1]);
 	std::string pass_wd(argv[2]);
+	//signal(SIGTSTP, SIG_IGN);
 	try
 	{
 		Server server(port, pass_wd);
@@ -27,5 +28,3 @@ int main(int argc, char **argv)
 	}
 	return (0);
 }
-// supprimer le client correctement
-// afficher un beau message au depart et à l'arrivé

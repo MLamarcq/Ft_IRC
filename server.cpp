@@ -44,7 +44,21 @@ Server::~Server(void)
 		delete this->M_struct;
 	return ;
 }
+bool containsAlphanumeric(const std::vector<std::string>& strVector) {
+    for (std::vector<std::string>::const_iterator it = strVector.begin(); it != strVector.end(); ++it) {
+        const std::string& str = *it;
 
+        for (std::string::const_iterator chIt = str.begin(); chIt != str.end(); ++chIt) {
+            char ch = *chIt;
+
+            if (std::isalnum(static_cast<unsigned char>(ch))) {
+                return true;  // Return true as soon as an alphanumeric character is found
+            }
+        }
+    }
+
+    return false; // Return false if no alphanumeric character is found in any string
+}
 std::string	intTostring(int number)
 {
 	std::string result;
@@ -94,6 +108,11 @@ void		Server::setChanName(std::string name)
 	this->M_chanName = name;
 	return ;
 }
+
+std::list<client *>	Server::getServClientList(void) const
+{
+	return (this->listOfClients);
+}
 // std::vector<std::vector<std::string> > Server::getCmdArgs(void) const
 // {
 // 	return (this->M_args);
@@ -115,8 +134,10 @@ void	Server::init_struct(void)
 
 void	Server::fill_commands_vector(void)
 {
+	// faut que j'ajoute les 
 	this->M_commands.push_back("NICK");
 	this->M_commands.push_back("PASS");
+	this->M_commands.push_back("SSPA");
 	this->M_commands.push_back("USER");
 	this->M_commands.push_back("MODE");
 	this->M_commands.push_back("PING");
@@ -124,13 +145,17 @@ void	Server::fill_commands_vector(void)
 	this->M_commands.push_back("OPER");
 	this->M_commands.push_back("JOIN");
 	this->M_commands.push_back("PART");
+	this->M_commands.push_back("RTPA");
 	this->M_commands.push_back("KILL");
+	this->M_commands.push_back("LLKI");
 	this->M_commands.push_back("NOTICE");
 	this->M_commands.push_back("TOPIC");
 	this->M_commands.push_back("KICK");
 	this->M_commands.push_back("PRIVMSG");
+	this->M_commands.push_back("VMSGPRI");
 	this->M_commands.push_back("WALLOPS");
 	this->M_commands.push_back("userhost");
+	this->M_commands.push_back("INVITE");
 	return ;
 }
 
@@ -233,7 +258,13 @@ void	Server::i_handle_first_connexion(void)
 	if (this->M_cmdMap.empty())
 	{
 		if (requestParsing(this->M_struct->clientSockFd) == 0)
+		{
+			//this->M_cmdMap.clear();
+			//std::cout << PURPLE << "MAP IS CLEAR\n" << END;
+			//close(i);
+			//FD_CLR(i, &(this->M_struct->current_sockets));
 			return ;
+		}
 	}
 	std::map<std::string, std::vector <std::string> >::iterator m_it = this->M_cmdMap.begin();
 	std::map<std::string, std::vector <std::string> >::iterator m_ite = this->M_cmdMap.end();
@@ -243,7 +274,7 @@ void	Server::i_handle_first_connexion(void)
 			countCommand++;
 		if (m_it->first.find("USER") != std::string::npos)
 			countCommand++;
-		if (m_it->first.find("PASS") != std::string::npos)
+		if ((m_it->first.find("PASS") != std::string::npos) || (m_it->first.find("SSPA") != std::string::npos))
 			countCommand++;
 		m_it++;
 	}
@@ -263,12 +294,12 @@ void	Server::i_handle_first_connexion(void)
 	{
 		std::cout << "c3\n";
 		std::cout << returnValue << std::endl;
-		this->M_requestVector.clear();
+		//this->M_requestVector.clear();
 		this->M_cmdMap.clear();
 		this->eraseClientFromList(clientPtr->getNickName());
 		return ;
 	}
-	this->M_requestVector.clear();
+	//this->M_requestVector.clear();
 	this->M_cmdMap.clear();
 	//send welcome message
 	sendWelcomeMessage(clientPtr);
@@ -286,13 +317,23 @@ int	Server::requestParsing(int ClientFd)
 	size_t	find_r = 0;
 	size_t	find_n = 0;
 	int		count = 0;
+	std::cout << BLUE2 << "--------------IM IN REQUEST PARSING----------------\n" << END;
 	std::cout << "c1.1\n";
 	reader = read(ClientFd, buff, 512);
+	std::cout << "read value is " << reader << std::endl;
 	if (reader == -1)
 	{
 		std::cout << "Error reading. Please check client socket." << std::endl;
 		return (0);
 	}
+	if (reader == 0)
+	{
+		std::string message = commandObj->QUIT(ClientFd, this);
+		i_send_message(ClientFd,message);
+		std::cout << "NOTHING TO READ\n";
+		return (0);
+	}
+	
 	std::cout << "c1.2\n";
 	buff[reader] = '\0';
 	std::cout << "BUFF IS : " << buff << std::endl;
@@ -302,10 +343,11 @@ int	Server::requestParsing(int ClientFd)
 	// std::cout << "Request size = " << size << std::endl;
 	while (find_n < size - 1)
 	{
-		find_r = tmp.find('\r', find_n + 1);
+		/*find_r = tmp.find('\r', find_n + 1);*/
 		find_n = tmp.find('\n', find_n + 1);
-		if (find_r == std::string::npos || find_n == std::string::npos)
+		if (find_r == std::string::npos /*|| find_n == std::string::npos*/)
 		{
+			std::cout << "IN REQUEST PARSING\n";
 			std::cout << "Wrong request format. Please report to IRC's request format" << std::endl;
 			return (0);
 		}
@@ -363,76 +405,206 @@ int	Server::fillVectorRequest(int count, std::string tmp)
 {
 	size_t token = 0;
 	int i = 0;
-	//std::cout << "c1.3.1\n";
+	std::cout << BLUE3 << "--------------IM IN FILL VECTOR REQUEST----------------\n" << END;
 	while (i < count)
 	{
-		//std::cout << "c1.3.2\n";
-		//std::cout << "TMP IS "<< tmp << std::endl;
 		std::string string_copy = tmp;
 		std::string temp;
 		std::cout << "string_copy IS " << string_copy << std::endl;
 		token = string_copy.find('\n');
 		if (token == std::string::npos)
 		{
+			std::cout << "IN FILL VECTOR REQUEST\n";
 			std::cout << "Wrong request format. Please report to IRC's request format" << std::endl;
-			return (0);
+		
+			temp = string_copy;
+			std::cout << "TEMP IS " << temp << std::endl;
+			this->M_requestVector.push_back(temp);
+			temp.erase();
+			i++;
+
 		}
-		temp = string_copy.substr(0, token);
-		std::cout << "TEMP IS " << temp << std::endl;
-		this->M_requestVector.push_back(temp);
-		temp.erase();
-		//std::cout << "TEMP AFTER ERASE IS " << temp << std::endl;
-		//original
-			//string_copy.erase(0, token);
-		tmp = tmp.substr(token + 1, tmp.size());
-		i++;
+		else
+		{
+			temp = string_copy.substr(0, token);
+			std::cout << "TEMP IS " << temp << std::endl;
+			this->M_requestVector.push_back(temp);
+			temp.erase();
+			tmp = tmp.substr(token + 1, tmp.size());
+			i++;
+		}
 	}
-	// std::vector<std::string>::iterator ite = this->M_requestVector.end();
-	// for (std::vector<std::string>::iterator it = this->M_requestVector.begin(); it != ite; it++)
-	// 	std::cout << "vector = " << *it << std::endl;
-	//std::cout << "c1.3.3\n";
 	return (1);
 }
 
 
 int	Server::fillCmdMap(void)
 {
+	std::cout << RED << "--------------IM IN FILL CMD MAP----------------\n" << END;
+	std::cout << "REQUEST VECTOR IS\n";
+	std::vector<std::string>::iterator it = this->M_requestVector.begin();
+	std::vector<std::string>::iterator ite = this->M_requestVector.end();
+	while (it != ite)
+	{
+		std::cout << *it << std::endl;
+		it++;
+	}
 	if (this->M_requestVector.empty())
 	{
 		std::cout << "Request vector empty" << std::endl;
-		return (0);
+		return (1);
 	}
 	std::string first;
 	std::string second;
-	std::vector<std::string> temp;
-	std::vector<std::string>::iterator it = this->M_requestVector.begin();
-	std::vector<std::string>::iterator ite = this->M_requestVector.end();
+	std::vector<std::string> temp1;
+	std::vector<std::string> temp2;
+	it = this->M_requestVector.begin();
+	ite = this->M_requestVector.end();
+	std::cout << "C6\n";
+	std::cout << YELLOW << "JE REMPLIS LA MAP\n" << END;
+	std::map< std::string, std::vector<std::string> >::iterator mi_it;
+	
 	while (it != ite)
 	{
 		size_t space = it->find(' ');
 		if (space == std::string::npos)
 		{
-			std::cout << "Wrong request format. Please report to IRC's request format" << std::endl;
-			return (0);
+			std::cout << "C7\n";
+			std::cout << "REMPLI LA MAP SI CMD PAS DARGUMENTS\n";
+			first = it->c_str();
+			std::cout << "first = " << first << std::endl;
+			//temp = split_string_v2(second, ' ');
+			//temp1[0] = "";
+			temp1.push_back("");
+			temp1[0] = "";
+			mi_it = this->M_cmdMap.find(first);
+			if ((mi_it == this->M_cmdMap.end()) || first == "")
+			{
+				if (first != "")
+				{
+					std::cout << "C7.1\n";
+					this->M_cmdMap[first] = temp1;
+					int count = temp1.size();
+					int i = 0;
+					std::cout << "ARGV VECTOR AS " << count << " ELEMENTS\n";
+					while (i < count)
+					{
+						std::cout << i <<" ARG IS " << temp1[i] << std::endl;
+						i++;
+					}
+				}
+				else
+				{
+					std::cout << "C7.2\n";
+					temp1.push_back("");
+					temp1[0] = second;
+					this->M_cmdMap[first] = temp1;
+				}
+			}
+			it++;
+			//return (0);
 		}
-		first = it->substr(0, space);
-		std::cout << "first = " << first << std::endl;
-		second = it->substr(space + 1, it->size());
-		std::cout << "second = " << second << std::endl;
-		temp = split_string_v2(second, ' ');
-		this->M_cmdMap[first] = temp;
-		it++;
+		else 
+		{
+			std::cout << "C8\n";
+			std::cout << "REMPLI LA MAP SI CMD ARGUMENT \n";
+			first = it->substr(0, space);
+			std::cout << "first = " << first << std::endl;
+			second = it->substr(space + 1, it->size());
+			std::cout << "second = " << second << std::endl;
+
+			mi_it = this->M_cmdMap.find(first);
+			if ((mi_it == this->M_cmdMap.end()) || first == "")
+			{
+				std::cout << "C8.1\n";
+				if (first != "")
+				{
+					std::cout << "C8.2\n";
+					temp2 = split_string_v2(second, ' ');
+					int count = temp2.size();
+					int i = 0;
+					std::cout << "ARGV VECTOR AS " << count << " ELEMENTS\n";
+					while (i < count)
+					{
+						std::cout << i <<" ARG IS " << temp2[i] << std::endl;
+						i++;
+					}
+					this->M_cmdMap[first] = temp2;
+				}
+				else
+				{
+					std::cout << "C8.3\n";
+					temp1.push_back("");
+					temp1[0] = second;
+					std::cout << "C8.5\n";
+					this->M_cmdMap[first] = temp1;
+				}
+			}
+			it++;
+		}
+		
 	}
-	// std::map<std::string, std::vector<std::string> >::iterator m_it = this->M_cmdMap.begin();
-	// std::map<std::string, std::vector<std::string> >::iterator m_ite = this->M_cmdMap.end();
-	// while (m_it != m_ite)
-	// {
-	// 	std::cout << "La map = [" << m_it->first << "] = ";
-	// 	std::cout << m_it->second << std::endl;
-	// 	m_it++;
-	// }
+
 	std::map<std::string, std::vector<std::string> >::iterator m_it = this->M_cmdMap.begin();
 	std::map<std::string, std::vector<std::string> >::iterator m_ite = this->M_cmdMap.end();
+	std::cout << YELLOW << "JAFFICHE LA MAP REMPLIE\n" << END;
+	while (m_it != m_ite)
+	{
+		std::cout << "C9\n";
+		std::cout << "La map = [" << m_it->first << "] = ";
+		for (size_t i = 0; i < m_it->second.size(); ++i)
+		{
+			std::cout << m_it->second[i] << " ";
+		}
+		std::cout << std::endl;
+		m_it++;
+	}
+
+	std::cout << YELLOW << "JE GERE CTRL D\n" << END;
+	m_it = this->M_cmdMap.begin();
+	m_ite = this->M_cmdMap.end();
+
+	std::map<std::string, std::vector<std::string> >::iterator m_it2 = this->M_cmdMap.begin();
+	std::map<std::string, std::vector<std::string> >::iterator m_ite2 = this->M_cmdMap.end();
+	
+	while (m_it != m_ite)
+	{
+		if (m_it->first == "" && (m_it->second[0].find("DONE") == std::string::npos))
+		{
+			std::string tempKey;
+			std::string tempValue;
+			std::cout << "C10\n";
+			tempValue = m_it->second[0];
+			std::cout << "TEMP VALUE IS " << tempValue << std::endl;
+			while (m_it2 != m_ite2)
+			{
+				m_ite2--;
+				std::cout << "C10.1\n";
+				if (!containsAlphanumeric(m_ite2->second))
+				{
+					std::cout << "C10.2\n";
+					tempKey.append(m_ite2->first);
+					m_ite2->second.push_back("DONE");
+				}
+				
+			}
+			std::vector<std::string> vectTemp;
+			std::vector<std::string> vectTemp2;
+			vectTemp.push_back(tempValue);
+			vectTemp2.push_back("DONE");
+			//this->M_cmdMap[tempKey];
+			this->M_cmdMap[tempKey] = vectTemp;
+			this->M_cmdMap[m_it->first] = vectTemp2;
+			
+		}
+		m_it++;
+	}
+	// gérer plusieurs arguments => non chois assumé ya écrit couper command pas argument et ya pas tous les gens qui l'ont fait
+	// gérer à la fisrt connexion
+	// gérer quit
+	std::cout << "AFTER PARSING IMRANE MAP IS \n";
+	m_it = this->M_cmdMap.begin();
+	m_ite = this->M_cmdMap.end();
 
 	while (m_it != m_ite)
 	{
@@ -444,7 +616,9 @@ int	Server::fillCmdMap(void)
 		std::cout << std::endl;
 		m_it++;
 	}
-
+	
+	std::cout << "C11\n";
+	this->M_requestVector.clear();
 	return (1);
 }
 
@@ -462,34 +636,7 @@ std::vector<std::string> split_string_v2(const std::string& s, char delimiter)
 	return temp;
 }
 
-// void	Server::putRequestArgInVector(void)
-// {
-// 	std::map<std::string, std::string>::iterator m_it = this->M_cmdMap.begin();
-// 	std::map<std::string, std::string>::iterator m_ite = this->M_cmdMap.end();
-// 	std::vector<std::string> temp;
-// 	while (m_it != m_ite)
-// 	{
-// 		temp = split_string_v2(m_it->second, ' ');
-// 		this->M_args.push_back(temp);
-// 		temp.clear();
-// 		// std::cout << "La map = [" << m_it->first << "] = " << m_it->second << std::endl;
-// 		m_it++;
-// 	}
-// 	// std::vector<std::vector<std::string> >::iterator it = this->M_args.begin();
-// 	// std::vector<std::vector<std::string> >::iterator ite = this->M_args.end();
-// 	// while (it != ite)
-// 	// {
-// 	// 	std::vector<std::string>::iterator v_it = (*it).begin();
-// 	// 	std::vector<std::string>::iterator v_ite = (*it).end();
-// 	// 	while (v_it != v_ite)
-// 	// 	{
-// 	// 		std::cout << "Voici ce que contient les vecteur : " << *v_it << std::endl;
-// 	// 		v_it++;
-// 	// 	}
-// 	// 	it++;
-// 	// }
-// 	return ;
-// }
+
 
 std::string	Server::chooseAndExecuteAction(int clientFd)
 {
@@ -498,7 +645,9 @@ std::string	Server::chooseAndExecuteAction(int clientFd)
 	//std::cout << "Je suis ici et la" << std::endl;
 	bool	toggle = false;
 	std::string returnValue;
+	std::cout << PURPLE << "IM IN CHOOSE AND EXECUTE\n" << END;
 	std::cout << "c2.1\n";
+	returnValue = "nothing launch";
 	for (; m_it != m_ite; m_it++)
 	{
 		int i = 1;
@@ -543,15 +692,17 @@ std::string	Server::chooseAndExecuteAction(int clientFd)
 		}
 	}
 	std::cout << "c2.6\n";
-	return (" ") ;
+	return (returnValue) ;
 }
 
 std::string	Server::executeCmd(int i, int clientFd)
 {
+	std::cout << BLUE1 << "IM IN EXCECUTE CMD\n" << END;
 	switch (i)
 	{
 		case 1 :
 		{
+			std::cout << BLUE1 << "CASE 1\n" << END;
 			client* clientPtr;
 			std::string msg;
 			std::string oldNick;
@@ -589,8 +740,10 @@ std::string	Server::executeCmd(int i, int clientFd)
 		}
 		case 2 :
 		{
+			std::cout << BLUE1 << "CASE 2\n" << END;
 			std::cout << "On lance PASS" << std::endl;
 			std::string message = commandObj->PASS(clientFd, this);
+			std::cout << "PASS lancé" << std::endl;
 			if (message.find("nothing") == std::string::npos)
 			{
 				i_send_message(clientFd,message);
@@ -600,6 +753,20 @@ std::string	Server::executeCmd(int i, int clientFd)
 		}
 		case 3 :
 		{
+			std::cout << BLUE1 << "CASE 3\n" << END;
+			std::cout << "On lance PASS" << std::endl;
+			std::string message = commandObj->PASS(clientFd, this);
+			std::cout << "PASS lancé" << std::endl;
+			if (message.find("nothing") == std::string::npos)
+			{
+				i_send_message(clientFd,message);
+				return ("WRONG PASS");
+			}
+			break ;
+		}
+		case 4 :
+		{
+			std::cout << BLUE1 << "CASE 4\n" << END;
 			client* clientTmp;
 
 			clientTmp = this->findClientBySocket(clientFd);
@@ -620,11 +787,12 @@ std::string	Server::executeCmd(int i, int clientFd)
 			
 			break ;
 		}
-		case 4 :
+		case 5 :
 		{
 			std::cout << "On lance MODE" << std::endl;
 			client *client1 = this->findClientBySocket(clientFd);
-			int sendReturn = commandObj->MODE(client1, this);
+			//int sendReturn = commandObj->MODE(client1, this);
+			int sendReturn = commandObj->handleCmd(client1, this, "MODE");
 			if (sendReturn == -1)
 			{
 				std::cout << "Error sendind" << std::endl;
@@ -637,28 +805,32 @@ std::string	Server::executeCmd(int i, int clientFd)
 			}
 			break ;
 		}
-		case 5 :
+		case 6 :
 		{
+			std::cout << BLUE1 << "CASE 6\n" << END;
 			std::cout << "On lance PONG" << std::endl;
 			std::string message = commandObj->PING(clientFd, this);
 			i_send_message(clientFd,message);
+			return ("PING");
 			break ;
 		}
-		case 6 :
+		case 7 :
 		{
+			std::cout << BLUE1 << "CASE 7\n" << END;
 			std::cout << "On lance QUIT" << std::endl;
 			std::string message = commandObj->QUIT(clientFd, this);
 			i_send_message(clientFd,message);
 			break ;
 		}
-		case 7 :
+		case 8 :
 		{
+			std::cout << BLUE1 << "CASE 8\n" << END;
 			std::cout << "On lance OPER" << std::endl;
 			break ;
 		}
-		case 8 :
+		case 9 :
 		{
-			
+			std::cout << BLUE1 << "CASE 9\n" << END;
 			std::cout << "On lance JOIN" << std::endl;
 			client *client1 = this->findClientBySocket(clientFd);
 			if (!client1)
@@ -666,7 +838,8 @@ std::string	Server::executeCmd(int i, int clientFd)
 				std::cout << "Client doesn't exist" << std::endl;
 				break ;
 			}
-			int sendReturn = commandObj->JOIN(client1, this);
+			//int sendReturn = commandObj->JOIN(client1, this);
+			int sendReturn = commandObj->handleCmd(client1, this, "JOIN");
 			if (sendReturn == -1)
 			{
 				std::cout << "Error sending" << std::endl;
@@ -685,43 +858,160 @@ std::string	Server::executeCmd(int i, int clientFd)
 			// }
 			break ;
 		}
-		case 9 :
-		{
-			std::cout << "On lance PART" << std::endl;
-			break ;
-		}
 		case 10 :
 		{
-			std::cout << "On lance KILL" << std::endl;
+			std::cout << BLUE1 << "CASE 10\n" << END;
+			std::cout << "On lance PART" << std::endl;
+			client *client1 = this->findClientBySocket(clientFd);
+			if (!client1)
+			{
+				std::cout << "Client doesn't exist" << std::endl;
+				break ;
+			}
+			//int sendReturn = commandObj->JOIN(client1, this);
+			int sendReturn = commandObj->handleCmd(client1, this, "PART");
+			if (sendReturn == -1)
+			{
+				std::cout << "Error sending" << std::endl;
+				return ("Error Joinin channel");
+			}
+			else if (sendReturn > 0)
+			{
+				std::cout << "On va bien ici" << std::endl;
+				return ("Error Joinin channel");
+			}
 			break ;
 		}
 		case 11 :
 		{
-			std::cout << "On lance NOTICE" << std::endl;
+			std::cout << BLUE1 << "CASE 11\n" << END;
+			std::cout << "On lance PART" << std::endl;
+			client *client1 = this->findClientBySocket(clientFd);
+			if (!client1)
+			{
+				std::cout << "Client doesn't exist" << std::endl;
+				break ;
+			}
+			//int sendReturn = commandObj->JOIN(client1, this);
+			int sendReturn = commandObj->handleCmd(client1, this, "PART");
+			if (sendReturn == -1)
+			{
+				std::cout << "Error sending" << std::endl;
+				return ("Error Joinin channel");
+			}
+			else if (sendReturn > 0)
+			{
+				std::cout << "On va bien ici" << std::endl;
+				return ("Error Joinin channel");
+			}
 			break ;
 		}
 		case 12 :
 		{
-			std::cout << "On lance TOPIC" << std::endl;
+			std::cout << BLUE1 << "CASE 12\n" << END;
+			std::cout << "On lance KILL" << std::endl;
 			break ;
 		}
 		case 13 :
 		{
-			std::cout << "On lance KICK" << std::endl;
+			std::cout << BLUE1 << "CASE 13\n" << END;
+			std::cout << "On lance KILL" << std::endl;
 			break ;
 		}
 		case 14 :
 		{
-			std::cout << "On lance PRIVMSG" << std::endl;
+			std::cout << BLUE1 << "CASE 14\n" << END;
+			std::cout << "On lance NOTICE" << std::endl;
 			break ;
 		}
 		case 15 :
 		{
-			std::cout << "On lance WALLOPS" << std::endl;
+			std::cout << BLUE1 << "CASE 14\n" << END;
+			std::cout << "On lance TOPIC" << std::endl;
+			client *client1 = this->findClientBySocket(clientFd);
+			if (!client1)
+			{
+				std::cout << "Client doesn't exist" << std::endl;
+				break ;
+			}
+			//int sendReturn = commandObj->JOIN(client1, this);
+			int sendReturn = commandObj->handleCmd(client1, this, "TOPIC");
+			if (sendReturn == -1)
+			{
+				std::cout << "Error sending" << std::endl;
+				return ("Error Joinin channel");
+			}
+			else if (sendReturn > 0)
+			{
+				std::cout << "On va bien ici" << std::endl;
+				return ("Error Joinin channel");
+			}
 			break ;
 		}
 		case 16 :
 		{
+			std::cout << BLUE1 << "CASE 15\n" << END;
+			std::cout << "On lance KICK" << std::endl;
+			break ;
+		}
+		case 17 :
+		{
+			std::cout << BLUE1 << "CASE 16\n" << END;
+			std::cout << "On lance PRIVMSG" << std::endl;
+				client *client1 = this->findClientBySocket(clientFd);
+			if (!client1)
+			{
+				std::cout << "Client doesn't exist" << std::endl;
+				break ;
+			}
+			//int sendReturn = commandObj->JOIN(client1, this);
+			int sendReturn = commandObj->handleCmd(client1, this, "PRIVMSG");
+			if (sendReturn == -1)
+			{
+				std::cout << "Error sending" << std::endl;
+				return ("Error Joinin channel");
+			}
+			else if (sendReturn > 0)
+			{
+				std::cout << "On va bien ici" << std::endl;
+				return ("Error Joinin channel");
+			}
+			break ;
+		}
+		case 18 :
+		{
+			std::cout << BLUE1 << "CASE 17\n" << END;
+			std::cout << "On lance PRIVMSG" << std::endl;
+			client *client1 = this->findClientBySocket(clientFd);
+			if (!client1)
+			{
+				std::cout << "Client doesn't exist" << std::endl;
+				break ;
+			}
+			//int sendReturn = commandObj->JOIN(client1, this);
+			int sendReturn = commandObj->handleCmd(client1, this, "PRIVMSG");
+			if (sendReturn == -1)
+			{
+				std::cout << "Error sending" << std::endl;
+				return ("Error Joinin channel");
+			}
+			else if (sendReturn > 0)
+			{
+				std::cout << "On va bien ici" << std::endl;
+				return ("Error Joinin channel");
+			}
+			break ;
+			break ;
+		}
+		case 19 :
+		{
+			std::cout << BLUE1 << "CASE 18\n" << END;
+			std::cout << "On lance WALLOPS" << std::endl;
+			break ;
+		}
+		case 20 :
+		{
+			std::cout << BLUE1 << "CASE 19\n" << END;
 			client* clientTmp;
 
 			clientTmp = this->findClientBySocket(clientFd);
@@ -741,12 +1031,39 @@ std::string	Server::executeCmd(int i, int clientFd)
 			
 			break ;
 		}
+		case 21 :
+		{
+			std::cout << "On lance INVITE" << std::endl;
+			client *client1 = this->findClientBySocket(clientFd);
+			if (!client1)
+			{
+				std::cout << "Client doesn't exist" << std::endl;
+				break ;
+			}
+			//int sendReturn = commandObj->JOIN(client1, this);
+			int sendReturn = commandObj->handleCmd(client1, this, "INVITE");
+			if (sendReturn == -1)
+			{
+				std::cout << "Error sending" << std::endl;
+				return ("Error Joinin channel");
+			}
+			else if (sendReturn > 0)
+			{
+				std::cout << "On va bien ici" << std::endl;
+				return ("Error Joinin channel");
+			}
+			break ;
+		}
 		default :
 		{
+			std::cout << BLUE1 << "CASE DEFAULT\n" << END;
 			std::cout << "On ne doit pas rentrer ici normalement" << std::endl;
+			//std::string message = "421  was not coded =)\r\n";
+			//i_send_message(clientFd,message);
 			break ;
 		}
 	}
+	std::cout << BLUE1 << "END EXECUTE CMD\n" << END;
 	return ("nothing");
 }
 
@@ -787,14 +1104,15 @@ int	Server::addClientToChannel(client *client1, std::vector<std::string> temp)
 	// 	return ;
 	// }
 	// std::cout << "On arrive bien jusque la" << std::endl;
-
+	std::cout << YELLOW << "--------------------------I AM IN ADDCLIENTTOCHANNEL------------------------" << END << std::endl;
+	std::string message;
 	std::list<channel *>::iterator it = this->M_listOfChannels.begin();
 	std::list<channel *>::iterator ite = this->M_listOfChannels.end();
 	while (it != ite)
 	{
 		if ((*it)->getName().compare(temp[0]) == 0)
 		{
-			if ((*it)->getNbrOfClients() >= (*it)->getClientLimit())
+			if ((*it)->getNbrOfClients() >= (*it)->getClientLimit()) //poser la question aux gars
 			{
 				std::cout << "Limit of client reach, Can't join channel" << std::endl;
 				this->setChanName((*it)->getName());
@@ -811,6 +1129,13 @@ int	Server::addClientToChannel(client *client1, std::vector<std::string> temp)
 					(*it)->addClientToTheChannel(client1);
 					(*it)->increaseNbrCLient();
 					(*it)->printMap();
+					std::cout << "ON PASSE ICI DANS LE RAJOUT D'UN CLIENT AU CHAN AVC MDP" << std::endl;
+					(*it)->welcomeInChanMessage(client1);
+					if ((*it)->getTopic().empty() == 0)
+					{
+						message = RPL_TOPIC(client1->getNickName(), (*it)->getName(), (*it)->getTopic());
+						send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+					}
 					return (0);
 				}
 				else
@@ -824,6 +1149,13 @@ int	Server::addClientToChannel(client *client1, std::vector<std::string> temp)
 				(*it)->addClientToTheChannel(client1);
 				(*it)->increaseNbrCLient();
 				(*it)->printMap();
+				std::cout << "ON PASSE ICI DANS LE RAJOUT D'UN CLIENT AU CHAN SANS MDP" << std::endl;
+				(*it)->welcomeInChanMessage(client1);
+				if ((*it)->getTopic().empty() == 0)
+				{
+					message = RPL_TOPIC(client1->getNickName(), (*it)->getName(), (*it)->getTopic());
+					send(client1->getsocketFd(), message.c_str(), message.length(), 0);
+				}
 				return (0);
 			}
 			else
@@ -840,7 +1172,8 @@ int	Server::addClientToChannel(client *client1, std::vector<std::string> temp)
 	// std::cout << "C2" << std::endl;
 	return (0);
 }
-
+//USER fonctionne pas dans fist connexion car il US prend l'arg precedent et ER pareil
+// faut faire en sorte que quand ya justre command je prend pas arg precedent
 
 bool	Server::checkChannel(void) const
 {
@@ -854,8 +1187,9 @@ void	Server::i_handle_request(int i)
 	std::cout << "IM IN Handle CONNEXION\n";
 	if (requestParsing(i) == 0)
 	{
-		this->M_requestVector.clear();
+		//this->M_requestVector.clear();
 		this->M_cmdMap.clear();
+		std::cout << PURPLE << "MAP IS CLEAR\n" << END;
 		close(i);
 		FD_CLR(i, &(this->M_struct->current_sockets));
 		return ;
@@ -871,7 +1205,7 @@ void	Server::i_handle_request(int i)
 				countCommand++;
 			if (m_it->first.find("USER") != std::string::npos)
 				countCommand++;
-			if (m_it->first.find("PASS") != std::string::npos)
+			if ((m_it->first.find("PASS") != std::string::npos) || (m_it->first.find("SSPA") != std::string::npos))
 				countCommand++;
 			m_it++;
 		}
@@ -884,12 +1218,29 @@ void	Server::i_handle_request(int i)
 	}
 	if (this->findClientBySocket(i))
 	{
-		chooseAndExecuteAction(i);
-		this->M_requestVector.clear();
-		this->M_cmdMap.clear();
+		// faut pas que je clear si j'ai rien exécuté
+		std::string returnValue;
+		returnValue = chooseAndExecuteAction(i);
+		if (!(returnValue == "nothing launch" /*|| returnValue == "PING")*/))
+		{
+			//this->M_requestVector.clear();
+			this->M_cmdMap.clear();
+			std::cout << PURPLE << "MAP IS CLEAR\n" << END;
+		}
 		// this->M_args.clear();
 	}
 	// this->M_args.clear();
+}
+void	Server::eraseChannelFromList(channel *chan)
+{
+	std::list<channel *>::iterator found;
+	found = std::find(this->M_listOfChannels.begin(), this->M_listOfChannels.end(), chan);
+	if (found != this->M_listOfChannels.end())
+	{
+		delete (*found);
+		this->M_listOfChannels.erase(found);
+	}
+	return;
 }
 
 int		Server::isAlpha(char c)
@@ -1005,7 +1356,7 @@ void	Server::handle_sigint(int signal)
 	{
 		std::cout << "SIGINT received" << std::endl;
 		this->M_working = false;
-		this->M_requestVector.clear();
+		//this->M_requestVector.clear();
 		closeSocket();
 	}
 	return ;

@@ -59,7 +59,6 @@ class Server
 			// about client
 			int nbofClients;
 			client* createClient();
-			std::list<client *> listOfClients;
 			client* findClientBySocket(int clientSocketFd);
 			client*	findClientByNickName(std::string clientNickname);
 			void	eraseClientFromList(std::string clientNickname);
@@ -76,7 +75,7 @@ class Server
 			void				Copy_Struct(Server const &rhs);
 			void				init_struct(void);
 			void				fill_commands_vector(void);
-			std::vector<std::vector<std::string> > getCmdArgs(void) const;
+			std::list<client *>	getServClientList(void) const;
 
 			//All about socket
 			void				Setup_Socket(void);
@@ -112,6 +111,7 @@ class Server
 			void				setNewChannel(channel *chan);
 			int					addClientToChannel(client *client1, std::vector<std::string> parameter);
 			bool				checkChannel(void) const;
+			void				eraseChannelFromList(channel *chan);
 
 
 			void 				handle_sigpipe(int signal);
@@ -167,6 +167,7 @@ class Server
 		t_serv								*M_struct;
 		std::map<std::string, std::vector<std::string> >	M_cmdMap;
 		std::string							M_pass_wd;
+		std::list<client *> 				listOfClients;
 	
 	private :
 
@@ -185,6 +186,6 @@ class Server
 std::string			intTostring(int number);
 std::vector<std::string> split_string_v2(const std::string& s, char delimiter);
 std::string const	getTime();
-
+bool containsAlphanumeric(const std::vector<std::string>& strVector);
 
 #endif
