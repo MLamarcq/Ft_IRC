@@ -168,6 +168,7 @@ class Server
 		std::map<std::string, std::vector<std::string> >	M_cmdMap;
 		std::string							M_pass_wd;
 		std::list<client *> 				listOfClients;
+		std::list<channel *> 							M_listOfChannels;
 	
 	private :
 
@@ -179,7 +180,6 @@ class Server
 			bool											M_working;
 			//t_serv										*M_struct;
 			command											*commandObj;
-			std::list<channel *> 							M_listOfChannels;
 			std::string										M_chanName;
 };
 

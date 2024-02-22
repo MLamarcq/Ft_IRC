@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   command.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mlamarcq <mlamarcq@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mael <mael@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/25 15:33:59 by mlamarcq          #+#    #+#             */
-/*   Updated: 2024/02/15 12:09:52 by mlamarcq         ###   ########.fr       */
+/*   Updated: 2024/02/22 16:47:25 by mael             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,15 +80,15 @@
 # define RPL_UMODEIS(nick, modes)				RPL_PREFIX("221", nick) + " :" + modes + CLRF
 # define RPL_AWAY(nick, senderNick, msg)		RPL_PREFIX("301", nick) + " " + senderNick + " " + msg + CLRF
 # define RPL_CHANNELMODEIS(channel, mode)		RPL_PREFIX("324", "") + " " + channel + " " + mode + " " + CLRF
-# define RPL_NOTOPIC(nick, chan)				RPL_PREFIX("331", nick) + " " + chan + " :No topic is set" + CLRF
-# define RPL_TOPIC(nick, chan, topic)			RPL_PREFIX("332", nick) + " " + chan + " :" + topic + CLRF
+// # define RPL_NOTOPIC(nick, chan)				RPL_PREFIX("331", nick) + " " + chan + " :No topic is set" + CLRF
+# define RPL_TOPIC(nick, chan, topic)			RPL_PREFIX("332", nick) + " " + chan + " " + topic + CLRF
 # define RPL_NAMREPLY(nick, chan, names)		RPL_PREFIX("353", nick) + " = " + chan + " :" + names + CLRF
 # define RPL_ENDOFNAMES(nick, chan)				RPL_PREFIX("366", nick) + " " + chan + " :End of /NAMES list" + CLRF
 # define RPL_YOUREOPER(nick)					RPL_PREFIX("381", nick) + " :You are now an IRC operator" + CLRF
 # define RPL_QUIT(nick, senderNick, msg)		RPL_PREFIX("999", nick) + " :" + senderNick + " " + msg + CLRF
 
 //		ERROR
-# define ERR_NOSUCHNICK(nick, errNick)				RPL_PREFIX("401", nick) + " " + errNick + " :No such nick" + CLRF
+# define ERR_NOSUCHNICK(nick, errNick)				RPL_PREFIX("401", nick) + "" + errNick + " :No such nick" + CLRF
 # define ERR_NOSUCHCHANNEL(nick, chan)				RPL_PREFIX("403", nick) + " " + chan + " :No such channel" + CLRF
 # define ERR_CANNOTSENDTOCHAN(nick, chan)			RPL_PREFIX("404", nick) + " " + chan + " :Cannot send to channel" + CLRF
 # define ERR_TOOMANYTARGETS(nick)					RPL_PREFIX("407", nick) + " :Too many targets" + CLRF
@@ -99,7 +99,7 @@
 # define ERR_ERRONEUSNICKNAME(nick, errNick)		RPL_PREFIX("432", nick) + " " + errNick + " :Erroneous nickname" + CLRF
 # define ERR_NICKNAMEINUSE(nick, errNick)			RPL_PREFIX("435", nick) + " " + errNick + " :Nickname is already in use" + CLRF 
 # define ERR_USERNOTINCHANNEL(nick, userNick, chan)	RPL_PREFIX("441", nick) + " " + chan + " " + userNick + " :They aren't on that channel" + CLRF
-# define ERR_NOTONCHANNEL(nick, chan)				RPL_PREFIX("442", nick) + " :" + chan + " :You're not on that channel" + CLRF
+// # define ERR_NOTONCHANNEL(nick, chan)				RPL_PREFIX("442", nick) + " :" + chan + " :his not on that channel" + CLRF
 # define ERR_NEEDMOREPARAMS(nick, cmd)				RPL_PREFIX("461", nick) + " :" + cmd + " :Not enough parameters" + CLRF
 # define ERR_ALREADYREGISTRED(nick)					RPL_PREFIX("462", nick) + " :Unauthorized command (already registered)" + CLRF
 # define ERR_PASSWDMISMATCH(nick)					RPL_PREFIX("464", nick) + " :Password incorrect" + CLRF
@@ -117,8 +117,8 @@
 # define ERR_INVITEONLYCHAN(nick, channel)			(std::string(":") + SERVER_NAME + " 473 " + nick + " " + channel + " :Cannot join channel (+i)\r\n")
 # define MODE_CHANNEL_NEWMDP(nickname, username, channel, mode, pass)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " password is now :" + pass + "\r\n")
 # define MODE_CHANNEL_CLEARMDP(nickname, username, channel, mode)			(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " password is now erased" + "\r\n")
-# define MODE_CHANNEL_NOWOP(nickname, username, channel, mode, name)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + name + " is now an operator" + "\r\n")
-# define MODE_CHANNEL_NOMOREOP(nickname, username, channel, mode, name)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + name + " is no longer an operator" + "\r\n")
+# define MODE_CHANNEL_NOWOP(nickname, username, channel, mode, name)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + name + " is now a channel operator" + "\r\n")
+# define MODE_CHANNEL_NOMOREOP(nickname, username, channel, mode, name)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + name + " is no longer a channel operator" + "\r\n")
 # define MODE_CHANNEL_CLIENTLIMIT(nickname, username, channel, mode, nb)	(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + "client limit is now " + nb + "\r\n")
 # define MODE_CHANNEL_NOCLIENTLIMIT(nickname, username, channel, mode)		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + "no more client limit" + "\r\n")
 # define MODE_CHANNEL_NO_INVITE(nickname, username, channel, mode) 			(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + "(invite_only) remove " + "\r\n")
@@ -128,7 +128,7 @@
 # define MODE_TOPIC_OFF(nickname, username, channel, mode)					(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " Only operators can now change channel's topic." + "\r\n")
 # define MODE_TOPIC_ON(nickname, username, channel, mode)					(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " Channel's topic can now be change by everyone." + "\r\n")
 
-# define MODE_NEEDMOREPARAMS(nickname, username, channel, mode)				(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " Error. Need more prarameters." + "\r\n")
+# define MODE_NEEDMOREPARAMS(nickname, username, channel, mode)				(CLIENT_ID(nickname, username, "MODE")  + channel + " +" + mode + " Error. Need more prarameters." + "\r\n")
 
 // # define NOTONCHANNEL(nickname, username, channel) 							(CLIENT_ID(nickname, username, "") + channel + " Error. You are not on that channel.\r\n")
 #define NOTONCHANNEL(nickname, username, channel) 							(std::string(":") + SERVER_NAME + " 442 " + nickname + " " + channel + " :You are not on that channel\r\n")
@@ -140,8 +140,43 @@
 # define INVITE_ON_CHAN(nickname, username, channel, name)					(CLIENT_ID(nickname, username, "") + " " + name + " You are invited on " + channel + " by " + nickname + "\r\n")
 # define NEEDMOREPARAMS(nickname, username, cmd)							(CLIENT_ID(nickname, username, "")  + cmd + " Error. Need more prarameters." + "\r\n")
 # define PRIVMSG_CHAN(nickname, username, dest, msg) 						(CLIENT_ID(nickname, username, "PRIVMSG") + dest + " :" + msg + "\r\n")
-# define PART_CHAN(nickname, username, dest, msg) 							(CLIENT_ID(nickname, username, "PART") + dest + " :" + msg + "\r\n")
+// # define PRIVMSG_USER(nickname, username, name, msg) 						(CLIENT_ID(nickname, username, "PRIVMSG") + name + " :" + msg + "\r\n")
+// # define RPL_PRIVMSG(nick, username, target, message) 						(":" + nick + "!" + username + "@localhost PRIVMSG " + target + " :" + message + "\r\n")
+# define NOSUCHUSER(nickname, username, errNick) 							(CLIENT_ID(nickname, username, "PRIVMSG") + errNick + " :No such Nick" + "\r\n")
+# define PART_CHAN(nickname, username, dest, msg) 							(CLIENT_ID(nickname, username, "PART") + dest + " reason :" + msg + "\r\n")
+# define RPL_PART(user_id, channel, reason) 								(user_id + " PART " + channel + " " + reason + "\r\n")
+// # define KICK(nickname, username, channel, target, message) 				(CLIENT_ID(nickname, username, "KICK") + "#" + channel + " " + target + " :" + message + "\r\n")
 
+# define KICK_CHAN(nickname, username, dest, target, msg) 				(CLIENT_ID(nickname, username, "KICK") + dest + " " + target + msg + "\r\n")
+# define XKICK(nickname, username, channel, target, message)			(CLIENT_ID(nickname, username, "KICK") + channel + " " + target + " :" + message + "\r\n")
+# define YOU_KICK(nickname, username, channel, target, message)			(CLIENT_ID(nickname, username, "KICK") + channel +" " + target + " " + message + "\r\n")
+# define ERR_BADOPERKEY(nickname, username)								(CLIENT_ID(nickname, username, "OPER") + ": Operator password missmatch " + "\r\n")
+# define ISNOWOPE(nickname, username)									(CLIENT_ID(nickname, username, "OPER") + ": is now operator on " + SERVER_NAME + "\r\n")
+# define ISNOWOPE_BY_USER(nickname, username)							(CLIENT_ID(nickname, username, "OPER") + ": " + nickname + " mades you an operator on " + SERVER_NAME + "\r\n")
+# define PRIVMSG_WALLOPS(nickname, username, msg) 						(CLIENT_ID(nickname, username, "WALLOPS") + msg + "\r\n")
+
+# define ERR_WALLOPSPRIVSNEEDED(nickname, username)						CLIENT_ID(nickname, username, "WALLOPS") + ":You're not an operator\r\n"
+// # define ISNOWOPEFROMCHAN(nickname, username, chan)								(CLIENT_ID(nickname, username, "OPER") + ": is now operator on " + SERVER_NAME + " and " + chan + "\r\n")
+# define ISNOWOPEFROMCHAN(nickname, username, channel, name)			(CLIENT_ID(nickname, username, "") + name + " is now a channel operator in "  + channel + "\r\n")
+
+#define CLIENT_NOTONCHANNEL(nickname, username, channel, target, mode) 	(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " " + target + " is not on the channel" + "\r\n")
+#define WRONG_USER_MODE(nickname, username, channel, target, mode) 		(CLIENT_ID(nickname, username, "MODE")  + channel + " " + mode + " can't affect channel privileges " + target + " is a server operator" + "\r\n")
+#define XQUIT(nickname, username, message) (CLIENT_ID(nickname, username, "QUIT") + ":" + message + "\r\n")
+
+#define ERR_BADCHANNAME(nick, chan)										RPL_PREFIX("479", nick) + " " + chan + " :Illegal channel name\r\n"
+
+
+
+# define JOIN_IN_CHAN(nickname, username, channel)						(CLIENT_ID(nickname, username, "JOIN")  + channel + " " + nickname + " has joigned the channel " + "\r\n")
+# define WELCOME_CHAN(nickname, username, channel)						(CLIENT_ID(nickname, username, "JOIN")  + channel + " welcome to the channel " + "\r\n")
+#define XNOTICE(nickname, username, dest, msg) 							(CLIENT_ID(nickname, username, "NOTICE") + dest + " :" + msg + "\r\n")
+
+#define CLIENT_NOTONCHANNEL_KICK(nickname, username, channel, target) 	(CLIENT_ID(nickname, username, "")  + channel + " " + target + " is not on the channel" + "\r\n")
+
+#define ERR_NOTONCHANNEL(nickname, username, channel, target) (std::string(":") + SERVER_NAME + " 442 " + target + " " + channel + " : his not not on that channel\r\n")
+# define ERR_KICKPRIVSNEEDED(nickname, username)						CLIENT_ID(nickname, username, "") + "You're not an operator\r\n"
+
+# define RPL_NOTOPIC(nick, chan)										RPL_PREFIX("331", nick) + chan + ":No topic is set\r\n"
 
 
 #include "server.hpp"
@@ -164,18 +199,19 @@ class command {
 		std::string		USER(int fd, Server *serv);
 		std::string		PING(int fd, Server *serv);
 		//std::string		PONG();
-		std::string		OPER();
 		std::string		QUIT(int fd, Server* serv);
-		std::string		KICK();
-		std::string		NOTICE();
-		std::string		KILL();
-		std::string		WALLOPS();
+		int				WALLOPS(int fd, Server* serv);
+		int				OPER(int fd, Server* serv);
+		int				KICK(int fd, Server* serv);
 		int				TOPIC(client *client1, Server *serv);
 		int				MODE(client *client1, Server *serv);
 		int				JOIN(client *client1, Server *serv);
 		int				INVITE(client *client1, Server *serv);
 		int				PRIVMSG(client *client1, Server *serv);
 		int				PART(client *client1, Server *serv);
+		int				KILL(int fd, Server* serv);
+		int				NOTICE(int fd, Server* serv);
+		int				PART_QUIT(client *client1, Server *serv, std::string);
 
 		std::string		bot();
 

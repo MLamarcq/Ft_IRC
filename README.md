@@ -52,3 +52,24 @@ IMRANE CHANGEMENT :
 
 - Fonction JOIN terminee -> mais encore un petit soucis avec envoi d'erreur concernant les mauvais noms de channel
 - Commencement de MODE -> Creation de l'operateur "=" dans channel + nouvelles fonctions pour copie profonde
+
+
+A FAIRE AVANT 14h le 22/02 !!!
+
+Revoir les messages dans OPER : fait mais a revoir dans le cannal
+
+Revoir les deux dernieres commandes KILL et NOTICE : a faire avec Gael
+
+Ajouter message pour topic
+
+Faire message de bienvenue dans JOIN + revoir le message en cas de mauvais nom de cannal : a faire -> ok
+
+Dans part = faire un message KICK au moment de partir et laisser le message PART pour les clients presents dans le cannal + laisser le 
+message PART pour le client qui a quitter : a faire -> ok
+
+Dans KICK -> faire un message au client virer du cannal : a faire + les raisons
+
+2 erreurs Valgrind a gerer + already nick use + faire les leaks dans QUIT + nickname + enleve parsing MDP : a faire
+
+
+server : ligne 275

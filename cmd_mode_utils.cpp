@@ -7,7 +7,6 @@ int	command::whatArg(std::vector<std::string> temp)
 
 	while (i < temp.size())
 	{
-		std::cout << "temp[" << i << "] = " << temp[i] << std::endl;
 		if (i == 1)
 		{
 			int j = 0;
@@ -32,7 +31,6 @@ int	command::whatSign(std::vector<std::string> temp)
 
 	while (i < temp.size())
 	{
-		std::cout << "temp[" << i << "] = " << temp[i] << std::endl;
 		if (i == 1)
 		{
 			int j = 0;
